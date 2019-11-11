@@ -4,13 +4,13 @@
 
 double my_ddot(const int N, const double *X, const int incX, const double *Y, const int incY);
 
-double *my_dgemm_scalaire(int m, double *a, double *b);
+void my_dgemm_scalaire(int m, double *a, double *b, double *c);
 
-double *my_dgemm_scalaire_kij(int m, double *a, double *b);
+void my_dgemm_scalaire_kij(int m, double *a, double *b, double *c);
 
-double *my_dgemm_scalaire_ijk(int m, double *a, double *b);
+void my_dgemm_scalaire_ijk(int m, double *a, double *b, double *c);
 
-double *my_dgemm_scalaire_jik(int m, double *a, double *b);
+void my_dgemm_scalaire_jik(int m, double *a, double *b, double *c);
 
 void my_dgemm(int transA, int transB, int m, int n, int k, double alpha, double *a, int lda, double *b, int ldb, double beta, double *c, int ldc);
 

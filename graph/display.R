@@ -1,5 +1,5 @@
-file <- "data"
-data <- read.table(file,header=TRUE,sep=",")
+file <- "ddot"
+data <- read.table(paste(paste("data/", file, sep = ""), ".data", sep = ""),header=TRUE,sep=",")
 
 
 # Read car and truck values from tab-delimited autos.dat
@@ -10,7 +10,7 @@ plot_colors <- c(rgb(r=0.0,g=0.0,b=0.9), "red", "forestgreen")
 
 # Start PDF device driver to save output to figure.pdf
 #pdf(file=paste(output, ".pdf", sep = ""), height=3.5, width=5)
-pdf(file=paste(file, ".pdf", sep = ""))
+pdf(file=paste("pdf/", paste(file, ".pdf", sep = ""), sep = ""))
 
 # Trim off excess margin space (bottom, left, top, right)
 #par(mar=c(4.2, 3.8, 0.2, 0.2))
@@ -20,7 +20,9 @@ pdf(file=paste(file, ".pdf", sep = ""))
 # line widths.
 plot(data$n, data$ms, type="l", col=plot_colors[1],
    #xlim=range(data$n), ylim=range(data$ms),
-   xlab="Size of vector", ylab="Time")
+   xlab="Size of vector", ylab="Time", main="Time of ddot applied to two contiguous vectors")
+
+plot(data$n, data$Mflops, type="l", col=plot_colors[1], xlab="Size of vector", ylab="Mflops", main="Mflops of ddot applied to two contiguous vectors")
 #points((100:1000000)/260, type="l", col=plot_colors[2])
 # Make x axis tick marks without labels
 #axis(1, lab=F)

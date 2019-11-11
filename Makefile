@@ -1,8 +1,8 @@
 
-PROGRAMS = tp1 driver test_perf
+PROGRAMS = tp1 driver test_perf test_perf_my_dgemm_scalaire #$(basename $(notdir $(wildcard src/*.c)))
 CC = gcc
 
-bin_prog = bin/tp1 bin/driver bin/test_perf
+bin_prog = $(addprefix bin/,$(PROGRAMS))
 # Must be the first rule
 .PHONY: default
 default: $(bin_prog)
@@ -15,16 +15,6 @@ CFLAGS += -I./headers
 
 #LDLIBS = -L${MKLROOT}/lib/intel64 -Wl,--no-as-needed -lmkl_intel_ilp64 -lmkl_gnu_thread -lmkl_core -lgomp -lpthread -lm -ldl
 
-
-
-
-obj/%.o: src/%.c
-	$(CC) -o $@ $(CFLAGS) -c $<
-
-dep/%.d: src/%.c
-	$(CC) $(CFLAGS) -MM $< | sed -e 's|\(.*\)\.o:|bin/\1:|g' | sed -e 's|\.c |\.o |g' | sed -e 's|\.h|\.o|g' \
-	| sed -e 's|headers|obj|g' | sed -e 's|src|obj|g' > $@
-
 deps:
 	for p in ${PROGRAMS} ; do \
 		$(CC) $(CFLAGS) -MM src/$$p.c | sed -e 's|\(.*\)\.o:|bin/\1:|g' | sed -e 's|\.c |\.o |g' | sed -e 's|\.h|\.o|g' \
@@ -34,9 +24,23 @@ deps:
 
 -include $(wildcard dep/*.d)
 
-.PHONY: clean clean_deps
+
+obj/%.o: src/%.c
+	$(CC) -o $@ $(CFLAGS) -c $<
+
+.PHONY: graph
+graph:
+	bash graph/make_data.sh
+
+.PHONY: clean clean_deps clean_graph clean_all
+
+clean_all: clean clean_deps clean_graph
+
 clean:
 	rm -f bin/* obj/*.o
 
 clean_deps:
 	rm -f dep/*.d
+
+clean_graph:
+	rm -f data/*.data pdf/*.pdf

@@ -3,7 +3,7 @@
 #include "ddot.h"
 
 double my_ddot(const int N, const double *X, const int incX, const double *Y, const int incY) {
-  
+
   int i;
   double result = 0;
   for (i = 0; i < N; i++) {
@@ -13,27 +13,24 @@ double my_ddot(const int N, const double *X, const int incX, const double *Y, co
   return result;
 }
 
-double *my_dgemm_scalaire(int m, double *a, double *b) {
- 
+void my_dgemm_scalaire(int m, double *a, double *b, double* c) {
+
   int i, j, k;
-  double *c = calloc(sizeof(double), m*m);
-  
-  for (i = 0; i < m; i++) { 
-    for (k = 0; k < m; k++) { 
-      for (j = 0; j < m; j++) { 
+
+  for (i = 0; i < m; i++) {
+    for (k = 0; k < m; k++) {
+      for (j = 0; j < m; j++) {
 	c[i+m*k] += a[j+m*i]*b[j+m*k];
       }
     }
   }
 
-  return c;
 }
 
-double *my_dgemm_scalaire_kij(int m, double *a, double *b) {
- 
+void my_dgemm_scalaire_kij(int m, double *a, double *b, double* c) {
+
   int i, j, k;
-  double *c = calloc(sizeof(double), m*m);
-  
+
   for (k = 0; k < m; k++) {
     for (i = 0; i < m; i++) {
       for (j = 0; j < m; j++) {
@@ -42,14 +39,12 @@ double *my_dgemm_scalaire_kij(int m, double *a, double *b) {
     }
   }
 
-  return c;
 }
 
-double *my_dgemm_scalaire_ijk(int m, double *a, double *b) {
- 
+void my_dgemm_scalaire_ijk(int m, double *a, double *b, double* c) {
+
   int i, j, k;
-  double *c = calloc(sizeof(double), m*m);
-  
+
   for (i = 0; i < m; i++) { //
     for (j = 0; j < m; j++) { //
       for (k = 0; k < m; k++) { //
@@ -58,13 +53,11 @@ double *my_dgemm_scalaire_ijk(int m, double *a, double *b) {
     }
   }
 
-  return c;
 }
 
-double *my_dgemm_scalaire_jik(int m, double *a, double *b) {
- 
+void my_dgemm_scalaire_jik(int m, double *a, double *b, double* c) {
+
   int i, j, k;
-  double *c = calloc(sizeof(double), m*m);
 
   for (j = 0; j < m; j++) {
     for (i = 0; i < m; i++) {
@@ -74,15 +67,14 @@ double *my_dgemm_scalaire_jik(int m, double *a, double *b) {
     }
   }
 
-  return c;
 }
 
 void my_dgemm(int transA, int transB, int m, int n, int k, double alpha, double *a, int lda, double *b, int ldb, double beta, double *c, int ldc) {
 
   int i, j, l;
   double tmp;
-  
-  for (i = 0; i < m; i++) { 
+
+  for (i = 0; i < m; i++) {
     for (l = 0; l < n; l++) {
       tmp = 0;
       for (j = 0; j < k; j++) {
@@ -100,7 +92,7 @@ void my_dgemm(int transA, int transB, int m, int n, int k, double alpha, double 
 	}
       }
       c[i+m*l] = c[i+m*l]*beta + tmp*alpha;
-    } 
+    }
   }
 }
 
@@ -109,7 +101,7 @@ void my_daxpy (int n, double a, double *x, int incx, double *y, int incy) {
   for (i = 0; i < n; i++) {
     y[i] += a*x[i];
   }
-  
+
 }
 
 void my_dgemv(int transA, int m, int n, double alpha, double *A, int lda, double *X, int incX, double beta, double *Y, int incY) {
