@@ -171,27 +171,27 @@ void my_dtrsm (int *Layout, int side, int uplo, int transA, int diag, int m, int
 
   int i, j, k;
   double temp, one = 1.;
-  
+
   if (side == 0) { // left
     if (!transA) { // !transA
       if (uplo == 0) { // no trans, left, upper
-	for (j = 0; j < n; j++) {
-	  if (alpha != 1.) {
-	    for (i = 0; i < m; i++) {
-	      b[i+ldb*j] = alpha*b[i+ldb*j];
-	    }
-	  }
-	  for (k = m; k > 0; k--) {
-	    if (b[k+ldb*j] != 0) {
-	      if (diag == 0) {
+      	for (j = 0; j < n; j++) {
+      	  if (alpha != 1.) {
+      	    for (i = 0; i < m; i++) {
+      	      b[i+ldb*j] = alpha*b[i+ldb*j];
+      	    }
+      	  }
+      	  for (k = m-1; k >= 0; k--) {
+      	    if (b[k+ldb*j] != 0) {
+      	      if (diag == 0) {
 		b[k+ldb*j] /= a[k+lda*k];
-	      }
-	      for (i = 0; i < k-1; i++) {
+      	      }
+      	      for (i = 0; i < k; i++) {
 		b[i+ldb*j] -= b[k+ldb*j]*a[i+lda*k];
-	      }
-	    }
-	  }
-	}
+      	      }
+      	    }
+      	  }
+      	}
       }
       else { // no trans, left, lower
 	for (j = 0; j < n; j++) {
@@ -205,7 +205,7 @@ void my_dtrsm (int *Layout, int side, int uplo, int transA, int diag, int m, int
 	      if (diag == 0) {
 		b[k+ldb*j] /= a[k+lda*k];
 	      }
-	      for (i = 0; i < k-1; i++) {
+	      for (i = k+1; i < m; i++) {
 		b[i+ldb*j] -= b[k+ldb*j]*a[i+lda*k];
 	      }
 	    }
@@ -343,4 +343,26 @@ void my_dtrsm (int *Layout, int side, int uplo, int transA, int diag, int m, int
 
   (void)Layout;
 }
-      
+
+int my_dgesv (int matrix_layout , int n , int nrhs , double *a , int lda , int * ipiv , double *b , int ldb) {
+
+  int side = 0;
+  int uplo_l = 1;
+  int uplo_u = 0;
+  int transA = 0;
+  int diag = 1;
+  double alpha = 1.;
+  
+  /* A = LU */
+  my_dgetf2( n, n, a, lda, NULL );
+
+  /* Ly = b */
+  my_dtrsm (NULL, side, uplo_l, transA, 1, n,  nrhs,  alpha, a, lda, b, ldb);  
+
+  /* Ux = y */
+  my_dtrsm (NULL, side, uplo_u, transA, 0, n,  nrhs,  alpha, a, lda, b, ldb);
+
+  return 0;
+}
+
+
