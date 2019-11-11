@@ -23,6 +23,12 @@ void perf_printh(const perf_t *p) {
   printf("%ld:%ld:%ld:%ld\n", m, s, ms, micros);
 }
 
+void perf_print_time(const perf_t *p, long div) {
+  double res = (p->tv_sec * 1000000 + p->tv_usec) / div;
+  //  printf("%ld sec %ld usec\n", p->tv_sec, p->tv_usec);
+  printf("%lf\n", res);
+}
+
 void perf_printmicro(const perf_t *p) {
   printf("%ld\n", p->tv_usec + (p->tv_sec * 1000000));
 }

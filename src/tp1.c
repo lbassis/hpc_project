@@ -3,6 +3,7 @@
 #include <math.h>
 #include "util.h"
 #include "ddot.h"
+#include "perf.h"
 
 int main() {
 

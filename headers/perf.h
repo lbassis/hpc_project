@@ -14,4 +14,6 @@ void perf_printmicro(const perf_t *p);
 
 double perf_mflops(const perf_t *p, const long nb_op);
 
+void perf_print_time(const perf_t *p, long div);
+
 #endif
