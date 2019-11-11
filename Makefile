@@ -34,6 +34,9 @@ deps:
 
 -include $(wildcard dep/*.d)
 
-.PHONY: clean
+.PHONY: clean clean_deps
 clean:
-	rm -f bin/* obj/*.o dep/*.d
+	rm -f bin/* obj/*.o
+
+clean_deps:
+	rm -f dep/*.d
