@@ -50,9 +50,9 @@ double *my_dgemm_scalaire_ijk(int m, double *a, double *b) {
   int i, j, k;
   double *c = calloc(sizeof(double), m*m);
   
-  for (i = 0; i < m; i++) { //
-    for (j = 0; j < m; j++) { //
-      for (k = 0; k < m; k++) { //
+  for (i = 0; i < m; i++) {
+    for (j = 0; j < m; j++) {
+      for (k = 0; k < m; k++) {
 	c[i+m*k] += a[j+m*i]*b[j+m*k];
       }
     }
@@ -143,6 +143,25 @@ void my_dger(int m, int n, double alpha, double *X, int incX, double *Y, int inc
   for (i = 0; i < n; i++) {
     for (j = 0; j < m; j++) {
       A[i*lda+j] += X[i*incX]*Y[j*incY]*alpha;
+    }
+  }
+}
+
+void my_dgetf2( int m, int n, double* a, int lda, int* ipiv ) {
+
+  int i, j, k, x;
+  double *u = malloc(sizeof(double)*n);
+  double iik;
+
+  for (k = 0; k < m; k++) {
+    for (x = 0; x < n; x++) { // copia toda a linha k pra u
+      u[x] = a[lda*x+k];
+    }
+    for (i = k+1; i < m; i++) {
+      a[i+lda*k] = a[i+lda*k]/a[k+lda*k];
+      for (j = k+1; j < n; j++) {
+	a[i+lda*j] = a[i+lda*j] - a[i+lda*k] * u[j];
+      }
     }
   }
 }
