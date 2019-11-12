@@ -7,7 +7,12 @@ bin_prog = $(addprefix bin/,$(PROGRAMS))
 .PHONY: default
 default: $(bin_prog)
 
+.PHONY: install uninstall
+install:
+	mkdir -p bin dep lib obj pdf data
 
+uninstall:
+	rm -rf bin dep lib obj pdf data
 
 CFLAGS = -O3 -Wall -Wextra
 CFLAGS += -I./headers
@@ -24,9 +29,13 @@ deps:
 
 -include $(wildcard dep/*.d)
 
-
 obj/%.o: src/%.c
 	$(CC) -o $@ $(CFLAGS) -c $<
+
+.PHONY: lib
+lib: src/ddot.c
+	$(CC) $(CFLAGS) -shared -o lib/libmyblas.so -fPIC src/ddot.c
+
 
 .PHONY: graph
 graph:
