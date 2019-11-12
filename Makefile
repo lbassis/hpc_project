@@ -1,5 +1,5 @@
 
-PROGRAMS = tp1 driver test_perf test_perf_my_dgemm_scalaire #$(basename $(notdir $(wildcard src/*.c)))
+PROGRAMS = tp1 driver test_perf test_perf_my_dgemm_scalaire test_getrf test_getf2 #$(basename $(notdir $(wildcard src/*.c)))
 CC = gcc
 
 bin_prog = $(addprefix bin/,$(PROGRAMS))
@@ -16,9 +16,9 @@ uninstall:
 
 CFLAGS = -O3 -Wall -Wextra
 CFLAGS += -I./headers
-#CFLAGS +=  -DMKL_ILP64 -m64 -I${MKLROOT}/include
+CFLAGS +=  -DMKL_ILP64 -m64 -I${MKLROOT}/include
 
-#LDLIBS = -L${MKLROOT}/lib/intel64 -Wl,--no-as-needed -lmkl_intel_ilp64 -lmkl_gnu_thread -lmkl_core -lgomp -lpthread -lm -ldl
+LDLIBS = -L${MKLROOT}/lib/intel64 -Wl,--no-as-needed -lmkl_intel_ilp64 -lmkl_gnu_thread -lmkl_core -lgomp -lpthread -lm -ldl
 
 deps:
 	for p in ${PROGRAMS} ; do \

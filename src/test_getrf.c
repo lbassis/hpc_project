@@ -1,0 +1,32 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <mkl_cblas.h>
+#include <mkl.h>
+
+#include "util.h"
+#include "ddot.h"
+#include "perf.h"
+
+#define INIT_VEC(N, ...) {int i = 0;              \
+                          for(i = 0; i < N; i++)  \
+                            __VA_ARGS__;          \
+                         }
+#ifndef SIZE
+#define SIZE 100
+#endif
+
+int main(void){
+  double a[SIZE * SIZE] = {};
+  double b[SIZE * SIZE] = {};
+
+  INIT_VEC(SIZE * SIZE, a[i] = b[i] = rand();)
+
+  my_dgetrf(SIZE, SIZE, a, SIZE, NULL, 0);
+  affiche(SIZE, SIZE, a, SIZE, stdout);
+  printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+  long long ipiv[SIZE] = {};
+  LAPACKE_dgetrf(LAPACK_COL_MAJOR, SIZE, SIZE, b, SIZE, ipiv);
+
+  affiche(SIZE, SIZE, b, SIZE, stdout);
+  return 0;
+}

@@ -20,6 +20,10 @@ void my_dgemv(int transA, int m, int n, double alpha, double *a, int lda, double
 
 void my_dger(int m, int n, double alpha, double *X, int incX, double *Y, int incY, double *A, int lda);
 
+void my_dgetf2 (int m, int n, double* a, int lda, int* ipiv);
+
+void my_dgetrf (int m, int n, double* a, int lda, int* ipiv, int info);
+
 // BLAS_COL_MAJOR, ...
 
 #endif

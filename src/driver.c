@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <cblas.h>
+#include <mkl_cblas.h>
 
 #include "util.h"
 #include "ddot.h"
@@ -50,12 +50,11 @@
 
 
 
-//cold cache / hot cache
-//gemm tA*B
+
 
 int nb_fail = 0;
 
-/*
+
 TEST_VEC(ddot_zero, SIZE, a[i] = 1; b[i] = 0, SIZE, a, 1, a, 1)
 
 TEST_VEC(ddot_sum_of_i, SIZE, a[i] = i, SIZE, a, 1, a, 1)
@@ -63,16 +62,16 @@ TEST_VEC(ddot_sum_of_i, SIZE, a[i] = i, SIZE, a, 1, a, 1)
 TEST_VEC(ddot_with_lda_vec, LDA, a[i] = 1 / (i+1); b[i] = i * i, LDA/2, a, LDA/2, b, 1)
 
 TEST_MAT(ddot_with_lda_mat, LDA, 2, a[LDA * j + i] = i, LDA/2, a, LDA/2, a + LDA * sizeof(double), LDA/2)
-*/
+
 
 void main(void){
   printf("Tests :\n");
-/*
+
   CALL(ddot_zero)
   CALL(ddot_sum_of_i)
   CALL(ddot_with_lda_vec)
   CALL(ddot_with_lda_mat)
-*/
+
   if(nb_fail == 0){
     printf("[SUCCESS]\n");
   }
