@@ -36,6 +36,10 @@ int init_random(unsigned long m, unsigned long n, double **a) {
   for (i = 0; i < n; i++) {
     for (j = 0; j < m; j++) {
       mat[m*j+i] = (double)rand() / (double)((unsigned)RAND_MAX);
+      
+      if (i == j) { // si on est dans une diagonale, on s'assure qu'elle est dominante
+	mat[m*j+i] += m;
+      }
     }
   }
   return 0;
