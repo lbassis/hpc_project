@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <math.h>
-
+#include <mkl.h>
 #include "ddot.h"
 
 double my_ddot(const int N, const double *X, const int incX, const double *Y, const int incY) {
@@ -19,12 +19,18 @@ double my_ddot(const int N, const double *X, const int incX, const double *Y, co
 void my_dgemm_scalaire(int m, double *a, double *b, double* c) {
 
   int i, j, k;
+  double temp;
 
   for (i = 0; i < m; i++) {
     for (k = 0; k < m; k++) {
+      temp = 0;
+      printf("c[%d] = ", i+m*k);
       for (j = 0; j < m; j++) {
-	c[i+m*k] += a[j+m*i]*b[j+m*k];
+	printf("a[%d]*b[%d]+", j+m*i, j+m*k);
+	temp += a[j+m*i]*b[j+m*k];
       }
+      c[i+m*k] = temp;
+      printf("\n");
     }
   }
 
@@ -141,17 +147,13 @@ void my_dger(int m, int n, double alpha, double *X, int incX, double *Y, int inc
 
 void my_dgetf2( int m, int n, double* a, int lda, int* ipiv ) {
 
-  int i, j, k, x;
-  double *u = malloc(sizeof(double)*n);
+  int i, j, k;
 
   for (k = 0; k < m; k++) {
-    for (x = 0; x < n; x++) {
-      u[x] = a[lda*x+k];
-    }
     for (i = k+1; i < m; i++) {
-      a[i+lda*k] = a[i+lda*k]/a[k+lda*k];
+      a[i+lda*k] /= a[k+lda*k];
       for (j = k+1; j < n; j++) {
-	       a[i+lda*j] = a[i+lda*j] - a[i+lda*k] * u[j];
+	a[i+lda*j] -= a[i+lda*k] * a[lda*j+k];
       }
     }
   }
@@ -367,7 +369,7 @@ int my_dgesv (int matrix_layout , int n , int nrhs , double *a , int lda , int *
 }
 
 #ifndef BLOC_SIZE
-#define BLOC_SIZE 100
+#define BLOC_SIZE 1
 #endif
 
 void my_dgetrf (int m,
@@ -385,16 +387,18 @@ void my_dgetrf (int m,
   assert(r_bloc_x == 0);
   assert(r_bloc_y == 0);
 
+  ipiv = malloc(BLOC_SIZE*BLOC_SIZE*sizeof(int));
   int k = 0;
   for(k = 0; k < fmin(nb_bloc_x, nb_bloc_y); k++){
-    my_dgetf2(BLOC_SIZE, BLOC_SIZE, a + k * (BLOC_SIZE + lda), lda, NULL);
+    //my_dgetf2(BLOC_SIZE, BLOC_SIZE, a + k * (BLOC_SIZE + lda), lda, NULL);
+    LAPACKE_dgetf2 (CblasColMajor, BLOC_SIZE, BLOC_SIZE, a+k*(BLOC_SIZE+lda), lda, ipiv);
     int i = 0;
     for(i = k + 1; i < fmin(nb_bloc_x, nb_bloc_y); i++){
-      my_dtrsm (/*int *Layout*/ NULL,
-                /*int side*/ 0,
-                /*int uplo*/ 0,
-                /*int transA*/ 0,
-                /*int diag*/ 0,
+      cblas_dtrsm (/*int *Layout*/ CblasColMajor,
+                /*int side*/ CblasLeft,
+                /*int uplo*/ CblasUpper,
+                /*int transA*/ CblasNoTrans,
+                /*int diag*/ CblasNonUnit,
                 /*int m*/ BLOC_SIZE,
                 /*int n*/ BLOC_SIZE,
                 /*double alpha*/ 1,
@@ -405,11 +409,11 @@ void my_dgetrf (int m,
     }
     int j = 0;
     for(j = k + 1; j < fmin(nb_bloc_x, nb_bloc_y); j++){
-      my_dtrsm (/*int *Layout*/ NULL,
-                /*int side*/ 1,
-                /*int uplo*/ 1,
-                /*int transA*/ 0,
-                /*int diag*/ 0,
+      cblas_dtrsm (/*int *Layout*/ CblasColMajor,
+                /*int side*/ CblasRight,
+                /*int uplo*/ CblasLower,
+                /*int transA*/ CblasNoTrans,
+                /*int diag*/ CblasUnit,
                 /*int m*/ BLOC_SIZE,
                 /*int n*/ BLOC_SIZE,
                 /*double alpha*/ 1,
@@ -420,7 +424,9 @@ void my_dgetrf (int m,
     }
     for(i = k + 1; i < fmin(nb_bloc_x, nb_bloc_y); i++){
       for(j = k + 1; j < fmin(nb_bloc_x, nb_bloc_y); j++){
-        my_dgemm(0, 0, BLOC_SIZE, BLOC_SIZE, BLOC_SIZE, -1, a + i * BLOC_SIZE + k * lda, lda, a + k * BLOC_SIZE + j * lda, lda, 1, a + j * BLOC_SIZE + i * lda, lda);
+        cblas_dgemm (CblasColMajor, CblasNoTrans, CblasNoTrans, BLOC_SIZE, BLOC_SIZE, BLOC_SIZE, 
+		     -1., a+i*BLOC_SIZE+k*lda, lda, a+k*BLOC_SIZE+j*lda, lda, 1., a+j*BLOC_SIZE+i, lda);
+	//my_dgemm(0, 0, BLOC_SIZE, BLOC_SIZE, BLOC_SIZE, -1, a + i * BLOC_SIZE + k * lda, lda, a + k * BLOC_SIZE + j * lda, lda, 1, a + j * BLOC_SIZE + i * lda, lda);
       }
     }
   }

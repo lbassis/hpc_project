@@ -1,5 +1,5 @@
 
-PROGRAMS = tp1 driver test_perf test_perf_my_dgemm_scalaire test_getrf test_getf2 #$(basename $(notdir $(wildcard src/*.c)))
+PROGRAMS = tp1 driver test_perf test_perf_my_dgemm_scalaire test_getrf test_getf2 test_gemm_scalaire test_gemm #$(basename $(notdir $(wildcard src/*.c)))
 CC = gcc
 
 bin_prog = $(addprefix bin/,$(PROGRAMS))

@@ -28,11 +28,11 @@ double *alloc_vec(unsigned long n) {
   return alloc_mat(1, n);
 }
 
-int init_random(unsigned long m, unsigned long n, double **a) {
+int init_random(unsigned long m, unsigned long n, double **a, unsigned int seed) {
 
   unsigned long i, j;
   double *mat = *a;
-  
+  srand(seed);
   for (i = 0; i < n; i++) {
     for (j = 0; j < m; j++) {
       mat[m*j+i] = (double)rand() / (double)((unsigned)RAND_MAX);
@@ -45,33 +45,19 @@ int init_random(unsigned long m, unsigned long n, double **a) {
   return 0;
 }
 
-void ddot_warm() {
-
-  int current_rep, current_max = MAX_REPS;
-  unsigned long temp_m = 256;
-  double r;
-  double *a = alloc_vec(M_MAX);
-  double performance;
-  perf_t start, stop;
-
-  init_random(1, M_MAX, &a);
-  while (temp_m < M_MAX) {
-    current_rep = 0;
-
-    perf(&start);
-    while (current_rep < current_max) {
-      r = my_ddot(temp_m, a, 1, a, 1);
-      current_rep++;
+int init_identity(unsigned long m, unsigned long n, double **a) {
+  
+  unsigned long i, j;
+  double *mat = *a;
+  for (i = 0; i < n; i++) {
+    for (j = 0; j < m; j++) {
+      if (i == j) {
+	mat[i*m+j] = 1;
+      }
+      else {
+	mat[i*m+j] = 0;
+      }
     }
-    perf(&stop);
-
-    perf_diff(&start, &stop);
-    performance = current_max*perf_mflops(&stop, FLOPS_DDOT*temp_m);
-    printf("%lu;%lf\n", temp_m, performance);
-
-    temp_m *= 2;
-    current_max = (current_max < 10)? 5:current_max/2;
   }
-
-  free(a);
+  return 0;
 }
