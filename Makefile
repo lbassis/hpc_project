@@ -16,9 +16,12 @@ uninstall:
 
 CFLAGS = -O3 -Wall -Wextra
 CFLAGS += -I./headers
+CFLAGS += -I/home/cisd-simonin/myblas
 CFLAGS +=  -DMKL_ILP64 -m64 -I${MKLROOT}/include
 
 LDLIBS = -L${MKLROOT}/lib/intel64 -Wl,--no-as-needed -lmkl_intel_ilp64 -lmkl_gnu_thread -lmkl_core -lgomp -lpthread -lm -ldl
+LDLIBS += -L/home/cisd-simonin/myblas/build
+
 
 deps:
 	for p in ${PROGRAMS} ; do \

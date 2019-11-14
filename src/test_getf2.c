@@ -18,7 +18,7 @@ int main(void){
 
   a = alloc_mat(SIZE, SIZE);
   b = alloc_mat(SIZE, SIZE);
-  init_random(SIZE, SIZE, &a, 1);
+  init_random(SIZE, SIZE, a, 1);
   for (i = 0; i < SIZE*SIZE; i++) {
     b[i] = a[i];
   }
@@ -31,5 +31,7 @@ int main(void){
   }
 
   affiche(SIZE, SIZE, b, SIZE, stdout);
+  free(a);
+  free(b);
   return 0;
 }

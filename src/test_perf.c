@@ -34,7 +34,7 @@ int main(int argc, char* argv[]){
   double performance;
   perf_t start,stop;
   printf("n, Mflops, ms\n");
-  long flop = 4;
+  long flop = 2;
 
   // Executions a vide, flush potentiel, ...
 

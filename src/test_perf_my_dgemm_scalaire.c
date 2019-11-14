@@ -47,9 +47,9 @@ int main(int argc, char* argv[]){
   // Performance d'une addition scalaire
   int l = 0, n = 0;
   double *a = alloc_vec(MAX_SIZE * MAX_SIZE), *b = alloc_vec(MAX_SIZE * MAX_SIZE), *c = alloc_vec(MAX_SIZE * MAX_SIZE);
-  INIT_VEC(MAX_SIZE * MAX_SIZE, a[i] = i + 1; b[i] = i + 1)
+  INIT_VEC(MAX_SIZE * MAX_SIZE, a[i] = i + 1; b[i] = i + 1)//larnv
   long nb[2] = {MIN_SIZE, MAX_SIZE};
-  for(n = 0;  n < 2 ; n++){
+  for(n = 0;  n < 1 ; n++){
     int func = 0;
     printf("%ld, ", nb[n]);
     for(func = 0; func < 4; func++){
