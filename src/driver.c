@@ -4,7 +4,7 @@
 #include <mkl_cblas.h>
 
 #include "util.h"
-#include "ddot.h"
+#include "my_blas.h"
 #include "perf.h"
 
 #define TEST_MAT(NAME, N, M, INIT, ...) void test_ ## NAME ## _(void){                        \

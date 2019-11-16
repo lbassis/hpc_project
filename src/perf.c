@@ -1,6 +1,7 @@
-#include "perf.h"
 #include <stdio.h>
 #include <stdlib.h>
+
+#include "perf.h"
 
 void perf(perf_t *p) { gettimeofday(p, NULL); }
 

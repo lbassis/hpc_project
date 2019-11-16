@@ -2,12 +2,13 @@
 #include <stdlib.h>
 #include <mkl_cblas.h>
 #include <mkl.h>
+
 #include "util.h"
-#include "ddot.h"
 #include "perf.h"
+#include "my_dgemm.h"
 
 int main(void){
-  
+
   double *a, *b, *c, *d;
   int i;
   int IONE = 1;

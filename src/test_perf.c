@@ -2,9 +2,8 @@
 #include <stdlib.h>
 
 #include "util.h"
-#include "ddot.h"
+#include "my_blas.h"
 #include "perf.h"
-//#include "cblas.h"
 
 #define INIT_VEC(N, ...) {int i = 0;              \
                           for(i = 0; i < N; i++)  \
@@ -34,7 +33,7 @@ int main(int argc, char* argv[]){
   double performance;
   perf_t start,stop;
   printf("n, Mflops, ms\n");
-  long flop = 4;
+  long flop = 2;
 
   // Executions a vide, flush potentiel, ...
 

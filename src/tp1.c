@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include "util.h"
-#include "ddot.h"
+#include "my_dgemm.h"
 #include "perf.h"
 
 int main() {
