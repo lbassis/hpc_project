@@ -36,10 +36,10 @@ int main(void){
 
   /* affiche(m, n, d, ldc, stdout); */
   /* c = a*b */
-  my_dgemm(0, 0, 0, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc);
+  my_dgemm(CblasColMajor, CblasTrans, CblasNoTrans, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc);
 
   /* d = a*b */
-  cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, m, n, k, alpha, a, lda, b, ldb, beta, d, ldc);
+  cblas_dgemm(CblasColMajor, CblasTrans, CblasNoTrans, m, n, k, alpha, a, lda, b, ldb, beta, d, ldc);
 
   /* print d-c */
   for (i = 0; i < ldc*n; i++) {

@@ -206,8 +206,23 @@ void my_dgemm_seq(CBLAS_LAYOUT layout,
   }
 }
 
-void my_dgemm(int layout, int transA, int transB, int m, int n, int k, double alpha, double *a, int lda, double *b, int ldb, double beta, double *c, int ldc) {
+void my_dgemm(CBLAS_LAYOUT layout,
+                  CBLAS_TRANSPOSE TransA,
+                  CBLAS_TRANSPOSE TransB,
+                  const int m,
+                  const int n,
+                  const int k,
+                  const double alpha,
+                  const double *a,
+                  const int lda,
+                  const double *b,
+                  const int ldb,
+                  const double beta,
+                  double *c,
+                  const int ldc){
 
+
+	
 	int i, j, kk;
 
   int nb_bloc_n = (n + BLOC_SIZE - 1) / BLOC_SIZE;
@@ -216,20 +231,21 @@ void my_dgemm(int layout, int transA, int transB, int m, int n, int k, double al
 
   int current_block_n;
   int current_block_m;
-  int current_block_k;
 
-  int start_a, start_b, start_c;
+  int start_c;
   double current_beta = beta;
 
   for (i = 0; i < nb_bloc_m; i++) { // lignes de A
 		current_block_m = (i < nb_bloc_m - 1) ? BLOC_SIZE : m - i * BLOC_SIZE;
+
   	for (j = 0; j < nb_bloc_n; j++) { // colonnes de B
-      current_block_n = start_c = (i + j * ldc) * BLOC_SIZE;
-			(j < nb_bloc_n - 1) ? BLOC_SIZE : n - j * BLOC_SIZE;
+      start_c = (i + j * ldc) * BLOC_SIZE;
+			current_block_n = (j < nb_bloc_n - 1) ? BLOC_SIZE : n - j * BLOC_SIZE;
+
 			for (kk = 0; kk < nb_bloc_k; kk++) { // colonnes de A
-				my_dgemm_seq(CblasColMajor,
-										CblasNoTrans,
-										CblasNoTrans,
+				my_dgemm_seq(layout,
+										TransA,
+										TransB,
 		    						/* m */ current_block_m,
 										/* n */ current_block_n,
 		    						/* k */ (kk < nb_bloc_k - 1) ? BLOC_SIZE : k - kk * BLOC_SIZE,
