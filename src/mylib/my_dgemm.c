@@ -12,66 +12,156 @@
 #endif
 
 
-void my_dgemm_scalaire(const int m, const double *a, const double *b, double* c) {
+void my_dgemm_scalaire(CBLAS_LAYOUT layout,
+		       CBLAS_TRANSPOSE TransA,
+		       CBLAS_TRANSPOSE TransB,
+		       const int m,
+		       const int n,
+		       const int k,
+		       const double alpha,
+		       const double *a,
+		       const int lda,
+		       const double *b,
+		       const int ldb,
+		       const double beta,
+		       double *c,
+		       const int ldc) {
 
-  int i, j, k;
+  int i, j, kk;
   double temp;
 
   for (i = 0; i < m; i++) {
-    for (k = 0; k < m; k++) {
+    for (kk = 0; kk < m; kk++) {
       temp = 0;
-      //printf("c[%d] = ", i+m*k);
       for (j = 0; j < m; j++) {
-	       //printf("a[%d]*b[%d]+", j+m*i, j+m*k);
-	       temp += a[j+m*i]*b[j+m*k];
+	       temp += a[j+m*i]*b[j+m*kk];
       }
-      c[i+m*k] = temp;
-      //printf("\n");
+      c[i+m*kk] = temp;
     }
   }
 
+  (void)layout;
+  (void)TransA;
+  (void)TransB;
+  (void)n;
+  (void)k;
+  (void)alpha;
+  (void)beta;
+  (void)lda;
+  (void)ldb;
+  (void)ldc;
+
 }
 
-void my_dgemm_scalaire_kij(const int m, const double *a, const double *b, double* c) {
+void my_dgemm_scalaire_kij(CBLAS_LAYOUT layout,
+			   CBLAS_TRANSPOSE TransA,
+			   CBLAS_TRANSPOSE TransB,
+			   const int m,
+			   const int n,
+			   const int k,
+			   const double alpha,
+			   const double *a,
+			   const int lda,
+			   const double *b,
+			   const int ldb,
+			   const double beta,
+			   double *c,
+			   const int ldc) {
 
-  int i, j, k;
+  int i, j, kk;
 
-  for (k = 0; k < m; k++) {
+  for (kk = 0; kk < m; kk++) {
     for (i = 0; i < m; i++) {
       for (j = 0; j < m; j++) {
-	       c[i+m*k] += a[j+m*i]*b[j+m*k];
+	       c[i+m*kk] += a[j+m*i]*b[j+m*kk];
       }
     }
   }
 
+  (void)layout;
+  (void)TransA;
+  (void)TransB;
+  (void)n;
+  (void)k;
+  (void)alpha;
+  (void)beta;
+  (void)lda;
+  (void)ldb;
+  (void)ldc;
 }
 
-void my_dgemm_scalaire_ijk(const int m, const double *a, const double *b, double* c) {
+void my_dgemm_scalaire_ijk(CBLAS_LAYOUT layout,
+			   CBLAS_TRANSPOSE TransA,
+			   CBLAS_TRANSPOSE TransB,
+			   const int m,
+			   const int n,
+			   const int k,
+			   const double alpha,
+			   const double *a,
+			   const int lda,
+			   const double *b,
+			   const int ldb,
+			   const double beta,
+			   double *c,
+			   const int ldc) {
 
-  int i, j, k;
+  int i, j, kk;
 
   for (i = 0; i < m; i++) { //
     for (j = 0; j < m; j++) { //
-      for (k = 0; k < m; k++) { //
-	       c[i+m*k] += a[j+m*i]*b[j+m*k];
+      for (kk = 0; kk < m; kk++) { //
+	       c[i+m*kk] += a[j+m*i]*b[j+m*kk];
       }
     }
   }
 
+  (void)layout;
+  (void)TransA;
+  (void)TransB;
+  (void)n;
+  (void)k;
+  (void)alpha;
+  (void)beta;
+  (void)lda;
+  (void)ldb;
+  (void)ldc;
 }
 
-void my_dgemm_scalaire_jik(const int m, const double *a, const double *b, double* c) {
+void my_dgemm_scalaire_jik(CBLAS_LAYOUT layout,
+			   CBLAS_TRANSPOSE TransA,
+			   CBLAS_TRANSPOSE TransB,
+			   const int m,
+			   const int n,
+			   const int k,
+			   const double alpha,
+			   const double *a,
+			   const int lda,
+			   const double *b,
+			   const int ldb,
+			   const double beta,
+			   double *c,
+			   const int ldc) {
 
-  int i, j, k;
+  int i, j, kk;
 
   for (j = 0; j < m; j++) {
     for (i = 0; i < m; i++) {
-      for (k = 0; k < m; k++) {
-	       c[i+m*k] += a[j+m*i]*b[j+m*k];
+      for (kk = 0; kk < m; kk++) {
+	       c[i+m*kk] += a[j+m*i]*b[j+m*kk];
       }
     }
   }
 
+  (void)layout;
+  (void)TransA;
+  (void)TransB;
+  (void)n;
+  (void)k;
+  (void)alpha;
+  (void)beta;
+  (void)lda;
+  (void)ldb;
+  (void)ldc;
 }
 
 void my_dgemm_seq(CBLAS_LAYOUT layout,
@@ -115,7 +205,7 @@ void my_dgemm_seq(CBLAS_LAYOUT layout,
   }
 }
 
-void my_dgemm(int transA, int transB, int m, int n, int k, double alpha, double *a, int lda, double *b, int ldb, double beta, double *c, int ldc) {
+void my_dgemm(int layout, int transA, int transB, int m, int n, int k, double alpha, double *a, int lda, double *b, int ldb, double beta, double *c, int ldc) {
 
   int i, j, kk;
 
