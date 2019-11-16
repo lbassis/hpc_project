@@ -24,7 +24,7 @@ void my_dgetrf(CBLAS_LAYOUT layout,
 	             const int lda,
 		           int* ipiv){
 
-  assert(layout != CblasColMajor);
+  assert(layout == CblasColMajor);
 	(void) ipiv;
 
   int nb_bloc_n = (n + BLOC_SIZE - 1) / BLOC_SIZE;

@@ -1,9 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+
 #include "util.h"
-#include "my_dgemm.h"
 #include "perf.h"
+#include "my_lib.h"
 
 int main() {
 

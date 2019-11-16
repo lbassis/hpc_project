@@ -5,10 +5,7 @@
 
 #include "util.h"
 #include "perf.h"
-#include "my_lapack.h"
-#include "my_blas.h"
-#include "my_dgemm.h"
-#include "my_dgetrf.h"
+#include "my_lib.h"
 
 #ifndef SIZE
 #define SIZE 10

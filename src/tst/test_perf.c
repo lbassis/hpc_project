@@ -2,8 +2,9 @@
 #include <stdlib.h>
 
 #include "util.h"
-#include "my_blas.h"
 #include "perf.h"
+
+#include "my_lib.h"
 
 #define INIT_VEC(N, ...) {int i = 0;              \
                           for(i = 0; i < N; i++)  \

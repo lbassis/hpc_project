@@ -5,8 +5,7 @@
 
 #include "util.h"
 #include "perf.h"
-#include "my_lapack.h"
-#include "my_blas.h"
+#include "my_lib.h"
 
 #define SIZE 20
 

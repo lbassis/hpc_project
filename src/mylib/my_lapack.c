@@ -14,7 +14,7 @@ void my_dgetf2(CBLAS_LAYOUT layout,
                const int lda,
                int* ipiv) {
 
-  assert(layout != CblasColMajor);
+  assert(layout == CblasColMajor);
 
   (void)ipiv;
 
@@ -40,7 +40,7 @@ void my_dgesv (CBLAS_LAYOUT matrix_layout,
               double *b,
               const int ldb) {
 
-  assert(matrix_layout != CblasColMajor);
+  assert(matrix_layout == CblasColMajor);
 
 
   /* A = LU */

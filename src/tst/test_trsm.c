@@ -2,10 +2,10 @@
 #include <stdlib.h>
 #include <mkl_cblas.h>
 #include <mkl.h>
+
 #include "util.h"
-#include "my_lapack.h"
 #include "perf.h"
-#include "my_blas.h"
+#include "my_lib.h"
 
 #ifndef SIZE
 #define SIZE 10
