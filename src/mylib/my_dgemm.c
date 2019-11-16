@@ -27,6 +27,7 @@ void my_dgemm_scalaire(CBLAS_LAYOUT layout,
 		       double *c,
 		       const int ldc) {
 
+  printf("oi\n");
   int i, j, kk;
   double temp;
 
@@ -39,7 +40,7 @@ void my_dgemm_scalaire(CBLAS_LAYOUT layout,
       c[i+m*kk] = temp;
     }
   }
-
+  printf("tchau\n");
   (void)layout;
   (void)TransA;
   (void)TransB;
