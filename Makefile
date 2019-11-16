@@ -1,5 +1,5 @@
 
-PROGRAMS = tp1 driver test_perf test_perf_my_dgemm_scalaire test_getrf test_getf2 test_gemm_scalaire test_gemm #$(basename $(notdir $(wildcard src/*.c)))
+PROGRAMS = tp1 driver test_perf test_perf_my_dgemm_scalaire test_getrf test_getf2 test_gemm_scalaire test_gemm test_trsm #$(basename $(notdir $(wildcard src/*.c)))
 CC = gcc
 
 bin_prog = $(addprefix bin/,$(PROGRAMS))
@@ -27,7 +27,7 @@ deps:
 	for p in ${PROGRAMS} ; do \
 		$(CC) $(CFLAGS) -MM src/$$p.c | sed -e 's|\(.*\)\.o:|bin/\1:|g' | sed -e 's|\.c |\.o |g' | sed -e 's|\.h|\.o|g' \
 		| sed -e 's|headers|obj|g' | sed -e 's|src|obj|g' > dep/$$p.d ; \
-		echo '	$$(CC) -o $$@ $$^ $$(LDLIBS)' >> dep/$$p.d ; \
+		echo '	@$$(CC) -o $$@ $$^ $$(LDLIBS)' >> dep/$$p.d ; \
 	done
 
 -include $(wildcard dep/*.d)

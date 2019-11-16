@@ -2,13 +2,13 @@
 #include <stdlib.h>
 #include <mkl_cblas.h>
 #include <mkl.h>
-#include "util.h"
-#include "ddot.h"
-#include "perf.h"
 
-#ifndef SIZE
+#include "util.h"
+#include "perf.h"
+#include "my_lapack.h"
+#include "my_blas.h"
+
 #define SIZE 20
-#endif
 
 int main(void){
 
@@ -23,7 +23,7 @@ int main(void){
     b[i] = a[i];
   }
 
-  my_dgetf2(SIZE, SIZE, a, SIZE, NULL);
+  my_dgetf2(CblasColMajor, SIZE, SIZE, a, SIZE, NULL);
   LAPACKE_dgetf2(LAPACK_COL_MAJOR, SIZE, SIZE, b, SIZE, ipiv);
 
   for (i = 0; i < SIZE*SIZE; i++) {

@@ -5,23 +5,67 @@
 #include <mkl.h>
 #include "my_blas.h"
 
-int my_dgesv (int matrix_layout , int n , int nrhs , double *a , int lda , int * ipiv , double *b , int ldb) {
 
-  int side = 0;
-  int uplo_l = 1;
-  int uplo_u = 0;
-  int transA = 0;
-  int diag = 1;
-  double alpha = 1.;
+
+void my_dgetf2(CBLAS_LAYOUT layout,
+               const int m,
+               const int n,
+               double* a,
+               const int lda,
+               int* ipiv) {
+
+  assert(layout != CblasColMajor);
+
+  (void)ipiv;
+
+  int i, j, k;
+
+  for (k = 0; k < m; k++) {
+    for (i = k+1; i < m; i++) {
+      a[i+lda*k] /= a[k+lda*k];
+      for (j = k+1; j < n; j++) {
+	       a[i+lda*j] -= a[i+lda*k] * a[lda*j+k];
+      }
+    }
+  }
+
+}
+
+void my_dgesv (CBLAS_LAYOUT matrix_layout,
+              const int n,
+              const int nrhs,
+              const double *a,
+              const int lda,
+              int * ipiv,
+              double *b,
+              const int ldb) {
+
+  assert(matrix_layout != CblasColMajor);
+
 
   /* A = LU */
-  my_dgetf2( n, n, a, lda, NULL );
+  my_dgetf2(matrix_layout, n, n, a, lda, NULL);
 
   /* Ly = b */
-  my_dtrsm (NULL, side, uplo_l, transA, 1, n,  nrhs,  alpha, a, lda, b, ldb);
+  my_dtrsm(matrix_layout,
+           CblasLeft,
+           CblasLower,
+           CblasNoTrans,
+           CblasNonUnit,
+           /* m */ n,
+           /* n */ nrhs,
+           /* alpha */ 1.,
+           a, lda, b, ldb);
 
   /* Ux = y */
-  my_dtrsm (NULL, side, uplo_u, transA, 0, n,  nrhs,  alpha, a, lda, b, ldb);
+  my_dtrsm(matrix_layout,
+           CblasLeft,
+           CblasUpper,
+           CblasNoTrans,
+           CblasUnit,
+           /* m */ n,
+           /* n */ nrhs,
+           /* alpha */ 1.,
+           a, lda, b, ldb);
 
-  return 0;
 }

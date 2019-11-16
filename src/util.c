@@ -3,7 +3,6 @@
 #include <limits.h>
 #include "util.h"
 #include "perf.h"
-#include "ddot.h"
 
 #define M_MAX 1e9
 #define MAX_REPS 1e5

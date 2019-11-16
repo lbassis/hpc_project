@@ -5,51 +5,85 @@
 #include <mkl.h>
 #include "my_blas.h"
 
-double my_ddot(const int N, const double *X, const int incX, const double *Y, const int incY) {
+double my_ddot(const int N,
+               const double *X,
+               const int incX,
+               const double *Y,
+               const int incY) {
 
   int i;
   double result = 0;
   for (i = 0; i < N; i++) {
-    result += X[i*incX] * Y[i*incY]; // 4 flops + 3 loads + 1 store
+    result += X[i*incX] * Y[i*incY]; // 2 flops
   }
 
   return result;
 }
 
-void my_daxpy (int n, double a, double *x, int incX, double *y, int incY) {
+void my_daxpy (const int n,
+               const double alpha,
+               const double *x,
+               const int incX,
+               double *y,
+               const int incY) {
+
   int i;
   for (i = 0; i < n; i++) {
-    y[i*incY] += a*x[i*incX];
+    y[i*incY] += alpha*x[i*incX];
   }
 
 }
 
-void my_dgemv(int transA, int m, int n, double alpha, double *A, int lda, double *X, int incX, double beta, double *Y, int incY) {
+void my_dgemv(CBLAS_LAYOUT layout,
+              CBLAS_TRANSPOSE TransA,
+              const int m,
+              const int n,
+              const double alpha,
+              const double *A,
+              const int lda,
+              const double *X,
+              const int incX,
+              const double beta,
+              double *Y,
+              const int incY){
+
+  assert(layout != CblasColMajor);
 
   int i, j;
+  int transA = (TransA == CblasNoTrans);
 
   if (transA) {
     for (i = 0; i < n; i++) {
       double tmp = 0;
       for (j = 0; j < m; j++) {
-	tmp += A[j+lda*i]*X[j*incX];
+	       tmp += A[j+lda*i]*X[j*incX];
       }
       Y[i*incY] = Y[i*incY]*beta + tmp*alpha;
     }
-  }
-
-  else {
+  } else {
     for (i = 0; i < n; i++) {
       double tmp = 0;
       for (j = 0; j < m; j++) {
-	tmp += A[i+lda*j]*X[j*incX];
+	       tmp += A[i+lda*j]*X[j*incX];
       }
       Y[i*incY] = Y[i*incY]*beta + tmp*alpha;
     }
   }
 }
 
-void my_dger(int m, int n, double alpha, double *X, int incX, double *Y, int incY, double *A, int lda) {
+
+void my_dger(CBLAS_LAYOUT layout,
+             const int m,
+             const int n,
+             const double alpha,
+             const double *X,
+             const int incX,
+             const double *Y,
+             const int incY,
+             double *A,
+             const int lda) {
+
+  assert(layout != CblasColMajor);
 
   int i, j;
   for (i = 0; i < n; i++) {
@@ -59,204 +93,185 @@ void my_dger(int m, int n, double alpha, double *X, int incX, double *Y, int inc
   }
 }
 
-void my_dgetf2( int m, int n, double* a, int lda, int* ipiv ) {
+void my_dtrsm(CBLAS_LAYOUT layout,
+              CBLAS_SIDE side,
+              CBLAS_UPLO uplo,
+              CBLAS_TRANSPOSE transA,
+              CBLAS_DIAG diag,
+              const int m,
+              const int n,
+              const double alpha,
+              const double *a,
+              const int lda,
+              double *b,
+              const int ldb){
 
-  int i, j, k;
+    assert(layout != CblasColMajor);
 
-  for (k = 0; k < m; k++) {
-    for (i = k+1; i < m; i++) {
-      a[i+lda*k] /= a[k+lda*k];
-      for (j = k+1; j < n; j++) {
-	a[i+lda*j] -= a[i+lda*k] * a[lda*j+k];
-      }
+    if (n <= 0 || m <= 0) {
+      fprintf(stderr, "my_dtrsm matrix dimentions invalid\n");
+      return;
     }
-  }
 
-  (void)ipiv;
-}
-
-void my_dtrsm (int *Layout, int side,
-               int uplo, int transA,
-               int diag,
-               int m,
-               int n,
-               double alpha,
-               double *a,
-               int lda,
-               double *b,
-               int ldb) {
-
-  int i, j, k;
-  double temp, one = 1.;
-
-  if (side == 0) { // left
-    if (!transA) { // !transA
-      if (uplo == 0) { // no trans, left, upper
-      	for (j = 0; j < n; j++) {
-      	  if (alpha != 1.) {
-      	    for (i = 0; i < m; i++) {
-      	      b[i+ldb*j] = alpha*b[i+ldb*j];
-      	    }
-      	  }
-      	  for (k = m-1; k >= 0; k--) {
-      	    if (b[k+ldb*j] != 0) {
-      	      if (diag == 0) {
-		              b[k+ldb*j] /= a[k+lda*k];
-      	      }
-      	      for (i = 0; i < k; i++) {
-		              b[i+ldb*j] -= b[k+ldb*j]*a[i+lda*k];
-      	      }
-      	    }
-      	  }
-      	}
+    int i = 0, j = 0, k = 0;
+    if (alpha == 0.) {
+      for (j = 0; j < n; ++j) {
+        for (i = 0; i < m; ++i) {
+          b[i + j * ldb] = 0.;
+        }
       }
-      else { // no trans, left, lower
-	for (j = 0; j < n; j++) {
-	  if (alpha != 1.) {
-	    for (i = 0; i < m; i++) {
-	      b[i+ldb*j] = alpha*b[i+ldb*j];
-	    }
-	  }
-	  for (k = 0; k < m; k++) {
-	    if (b[k+ldb*j] != 0) {
-	      if (diag == 0) {
-		b[k+ldb*j] /= a[k+lda*k];
-	      }
-	      for (i = k+1; i < m; i++) {
-		b[i+ldb*j] -= b[k+ldb*j]*a[i+lda*k];
-	      }
-	    }
-	  }
-	}
-      }
+      return;
     }
-    else { //transA
-      if (uplo == 0) { // trans, left, upper
-	for (j = 0; j < n; j++) {
-	  for (i = 0; i < m; i++) {
-	    temp = alpha*b[i+ldb*j];
-	    for (k = 0; k < i-1; k++) {
-	      temp -= a[k+lda*i]*b[k+ldb*j];
-	    }
-	    if (diag == 0) {
-		temp /= a[i+lda*i];
-	    }
-	    b[i+ldb*j] = temp;
-	  }
-	}
-      }
-      else { // trans, left, lower
-	for (j = 0; j < n; j++) {
-	  for (i = m; i > 0; i--) {
-	    temp = alpha*b[i+ldb*j];
-	    for (k = i+1; k < m; k++) {
-	      temp -= a[k+lda*i]*b[k+ldb*j];
-	    }
-	    if (diag == 0) {
-		temp /= a[i+lda*i];
-	    }
-	    b[i+ldb*j] = temp;
-	  }
-	}
-      }
-    }
-  }
-  else { // side = right
-    if (!transA) {
-      if (uplo == 0) { // no trans, right, upper
-	for (j = 0; j < n; j++) {
-	  if (alpha != 1.) {
-	    for (i = 0; i < m; i++) {
-	      b[i+ldb*j] = alpha*b[i+ldb*j];
-	    }
-	  }
-	  for (k = 1; k < j-1; k++) {
-	    if (a[k+ldb*j] != 0) {
-	      for (i = 0; i < m; i++) {
-		b[i+ldb*j] -= a[k+lda*j]*b[i+ldb*k];
-	      }
-	    }
-	  }
-	  if (diag == 0) {
-	    temp = one/a[j+lda*j];
-	    for (i = 0; i < m; i++) {
-	      b[i+ldb*j] *= temp;
-	    }
-	  }
-	}
-      }
-      else { // no trans, right, lower
-	for (j = 0; j < n; j++) {
-	  if (alpha != 1.) {
-	    for (i = 0; i < m; i++) {
-	      b[i+ldb*j] = alpha*b[i+ldb*j];
-	    }
-	  }
-	  for (k = j+1; k < n; k++) {
-	    if (a[k+ldb*j] != 0) {
-	      for (i = 0; i < m; i++) {
-		b[i+ldb*j] -= a[k+lda*j]*b[i+ldb*k];
-	      }
-	    }
-	  }
-	  if (diag == 0) {
-	    temp = one/a[j+lda*j];
-	    for (i = 0; i < m; i++) {
-	      b[i+ldb*j] *= temp;
-	    }
-	  }
-	}
-      }
-    }
-    else { //transA
-      if (uplo == 0) { // trans, right, upper
-	for (k = n; k >0; k--) {
-	  if (diag == 0) {
-	    temp = one/a[k+lda*k];
-	    for (i = 0; i < m; i++) {
-	      b[i+ldb*k] *= temp;
-	    }
-	  }
-	  for (j = 0; j < k-1; j++) {
-	    if (a[j+lda*k] != 0) {
-	      temp = a[j+lda*k];
-	      for (i = 0; i < m; i++) {
-		b[i+ldb*j] -= b[i+ldb*k];
-	      }
-	    }
-	  }
-	  if (alpha != 1) {
-	    for (i = 0; i < m; i++) {
-	      b[i+ldb*k] *= alpha;
-	    }
-	  }
-	}
-      }
-      else { // trans, right, lower
-	for (k = 0; k < n; k++) {
-	  if (diag == 0) {
-	    temp = one/a[k+lda*k];
-	    for (i = 0; i < m; i++) {
-	      b[i+ldb*k] *= temp;
-	    }
-	  }
-	  for (j = k+1; j < n; j++) {
-	    if (a[j+lda*k] != 0) {
-	      temp = a[j+lda*k];
-	      for (i = 0; i < m; i++) {
-		b[i+ldb*j] -= b[i+ldb*k];
-	      }
-	    }
-	  }
-	  if (alpha != 1) {
-	    for (i = 0; i < m; i++) {
-	      b[i+ldb*k] *= alpha;
-	    }
-	  }
-	}
-      }
-    }
-  }
 
-  (void)Layout;
+    int left_side = (side == CblasLeft);
+    int upper = (uplo == CblasUpper);
+    int unknown_diag = (diag == CblasNonUnit);
+    int transa = (transA == CblasNoTrans);
+
+    if (left_side) {
+      if (transa) {
+         if (upper) {
+            for (j = 0; j < n; j++) {
+                if (alpha != 1.) {
+                   for (i = 0; i < m; i++) {
+                       b[i + j * ldb] *= alpha;
+                   }
+                }
+                for (k = m-1; k >= 0; k--) { // left trans upper
+                   if (unknown_diag) {
+                      b[k + j * ldb] /= a[k + k * lda];
+                   }
+                   for (i = 0; i < k; i++) {
+                       b[i + j * ldb] -= b[k + j * ldb] * a[i + k * lda];
+                   }
+                }
+            }
+          } else {
+          for (j = 0; j < n; j++) {
+              if (alpha != 1.) {
+                  for (i = 0; i < m; i++) {
+                    b[i + j * ldb] *= alpha;
+                  }
+                }
+                for (k = 0; k < m; k++) { // left trans lower
+                    if (unknown_diag) {
+                         b[k + j * ldb] /= a[k + k * lda];
+                    }
+                    for (i = k + 1; i < m; i++) {
+                         b[i + j * ldb] -= b[k + j * ldb] * a[i + k * lda];
+                    }
+
+               }
+          }
+         }
+       } else {
+         if (upper) {
+            for (j = 0; j < n; j++) {
+               for (i = 0; i < m; i++) {
+		              //if(alpha != 1.){
+                      b[i + j * ldb] *= alpha;
+		              //}
+                  for (k = 0; k < i; k++) { // left !trans upper
+                      b[i + j * ldb] -= a[k + i * lda] * b[k + j * ldb];
+                  }
+                  if (unknown_diag) {
+                    b[i + j * ldb] /= a[i + i * lda];
+                  }
+                }
+             }
+          } else {
+            for (j = 0; j < n; j++) {
+               for (i = m-1; i >= 0; i--) { // left !trans lower
+		              //if(alpha != 1.){
+		                b[i + j * ldb] *= alpha;
+		              //}
+                  for (k = i+1; k < m; k++) {
+                      b[i + j * ldb] -= a[k + i * lda] * b[k + j * ldb];
+                    }
+                    if (unknown_diag) {
+                     b[i + j * ldb] /= a[i + i * lda];
+                   }
+                }
+             }
+         }
+      }
+    } else {
+      if (transa) {
+         if (upper) {
+            for (j = 0; j < n; j++) {
+                if (alpha != 1.) {
+                   for (i = 0; i < m; i++) {
+                     b[i + j * ldb] *= alpha;
+                   }
+                }
+               for (k = 0; k < j; k++) { // right trans upper
+                  for (i = 0; i < m; i++) {
+                      b[i + j * ldb] -= a[k + j * lda] * b[i + k * ldb];
+                  }
+               }
+               if (unknown_diag) {
+                   for (i = 0; i < m; i++) {
+                     b[i + j * ldb] /= a[j + j * lda];
+                   }
+               }
+             }
+         } else {
+            for (j = n-1; j >= 0; j--) {
+                if (alpha != 1.) {
+                   for (i = 0; i < m; i++) {
+                       b[i + j * ldb] *= alpha;
+                  }
+                }
+                for (k = j+1; k < n; k++) { // right trans lower
+                    for (i = 0; i < m; i++) {
+                        b[i + j * ldb] -= a[k + j * lda] * b[i + k * ldb];
+                    }
+                }
+                if (unknown_diag) {
+                  for (i = 0; i < m; i++) {
+                     b[i + j * ldb] /= a[j + j * lda];
+                  }
+                }
+            }
+          }
+      } else {
+          if (upper) {
+            for (k = n-1; k >= 0; k--) {
+               if (unknown_diag) {
+                   for (i = 0; i < m; i++) {
+                     b[i + k * ldb] /= a[k + k * lda];
+                   }
+                }
+                for (j = 0; j < k; j++) { // right !trans upper
+                   for (i = 0; i < m; i++) {
+                      b[i + j * ldb] -= a[j + k * lda] * b[i + k * ldb];
+                  }
+               }
+               if (alpha != 1.) {
+                  for (i = 0; i < m; i++) {
+                      b[i + k * ldb] *= alpha;
+                    }
+               }
+             }
+         } else {
+            for (k = 0; k < n; k++) {
+               if (unknown_diag) {
+                 for (i = 0; i < m; i++) {
+                     b[i + k * ldb] /= a[k + k *lda];
+                  }
+               }
+               for (j = k+1; j < n; j++) { // right !trans lower
+                  for (i = 0; i < m; i++) {
+                     b[i + j * ldb] -= a[j + k * lda] * b[i + k * ldb];
+                  }
+               }
+               if (alpha != 1.) {
+                   for (i = 0; i < m; i++) {
+                      b[i + k * ldb] *= alpha;
+                   }
+               }
+             }
+          }
+       }
+    }
 }

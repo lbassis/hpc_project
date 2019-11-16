@@ -2,9 +2,9 @@
 #include <stdlib.h>
 
 #include "util.h"
-#include "ddot.h"
 #include "perf.h"
-//#include "cblas.h"
+#include "my_blas.h"
+#include "my_dgemm.h"
 
 #define INIT_MAT(N, M, ...) {int j = 0;                   \
                              for(j = 0; j < M; j++)       \

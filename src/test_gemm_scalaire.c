@@ -2,9 +2,11 @@
 #include <stdlib.h>
 #include <mkl_cblas.h>
 #include <mkl.h>
+
 #include "util.h"
-#include "ddot.h"
 #include "perf.h"
+#include "my_dgemm.h"
+
 
 #ifndef SIZE
 #define SIZE 3
