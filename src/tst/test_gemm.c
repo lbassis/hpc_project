@@ -16,8 +16,8 @@ int main(void){
 
   double alpha = 1.;
   double beta = 1.3;
-  int m =   5;
-  int n =   4;
+  int m =   4;
+  int n =   5;
   int k =   2;
   int lda = m;
   int ldb = k;

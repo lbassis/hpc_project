@@ -30,24 +30,24 @@ CFLAGS +=  -DMKL_ILP64 -m64 -I${MKLROOT}/include
 LDLIBS = -L${MKLROOT}/lib/intel64 -Wl,--no-as-needed -lmkl_intel_ilp64 -lmkl_gnu_thread -lmkl_core -lgomp -lpthread -lm -ldl
 #LDLIBS += -L/home/cisd-simonin/myblas/build
 
-bin/test_trsm: obj/test_trsm.o $(UTILS_OBJ) lib/mylib.so
-	$(CC) -o $@ $(CFLAGS) $^ $(LDLIBS)
+#bin/test_trsm: obj/test_trsm.o $(UTILS_OBJ) lib/mylib.so
+#	$(CC) -o $@ $(CFLAGS) $^ $(LDLIBS)
 
 
 obj/mylib/%.o: src/mylib/%.c
-	$(CC) -o $@ $(CFLAGS) -c $< -fPIC
+	@$(CC) -o $@ $(CFLAGS) -c $< -fPIC
 
 obj/utilities/%.o: src/utilities/%.c
-	$(CC) -o $@ $(CFLAGS) -c $<
+	@$(CC) -o $@ $(CFLAGS) -c $<
 
 obj/%.o: src/tst/%.c
-	$(CC) -o $@ $(CFLAGS) -c $<
+	@$(CC) -o $@ $(CFLAGS) -c $<
 
 bin/%.exe: obj/%.o $(UTILS_OBJ) lib/mylib.so
-	$(CC) -o $@ $(CFLAGS) $^ $(LDLIBS)
+	@$(CC) -o $@ $(CFLAGS) $^ $(LDLIBS)
 
 lib/mylib.so: $(LIB_OBJ)
-	$(CC) $(CFLAGS) -shared -o lib/mylib.so $^ $(LDLIBS)
+	@$(CC) $(CFLAGS) -shared -o lib/mylib.so $^ $(LDLIBS)
 
 lib: lib/mylib.so
 

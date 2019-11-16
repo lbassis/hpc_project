@@ -50,7 +50,7 @@ void my_dgemv(CBLAS_LAYOUT layout,
   assert(layout == CblasColMajor);
 
   int i, j;
-  int transA = (TransA == CblasNoTrans);
+  int transA = (TransA == CblasTrans);
 
   if (transA) {
     for (i = 0; i < n; i++) {
@@ -126,7 +126,7 @@ void my_dtrsm(CBLAS_LAYOUT layout,
     int left_side = (side == CblasLeft);
     int upper = (uplo == CblasUpper);
     int unknown_diag = (diag == CblasNonUnit);
-    int transa = (transA == CblasNoTrans);
+    int transa = (transA == CblasTrans);
 
     if (left_side) {
       if (transa) {

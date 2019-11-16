@@ -27,7 +27,7 @@ void my_dgemm_scalaire(CBLAS_LAYOUT layout,
 		       double *c,
 		       const int ldc) {
 
-  printf("oi\n");
+  //printf("oi\n");
   int i, j, kk;
   double temp;
 
@@ -40,7 +40,7 @@ void my_dgemm_scalaire(CBLAS_LAYOUT layout,
       c[i+m*kk] = temp;
     }
   }
-  printf("tchau\n");
+  //printf("tchau\n");
   (void)layout;
   (void)TransA;
   (void)TransB;
@@ -184,8 +184,8 @@ void my_dgemm_seq(CBLAS_LAYOUT layout,
 
   int i, j, l;
   double tmp;
-  int transA = (TransA == CblasNoTrans);
-  int transB = (TransB == CblasNoTrans);
+  int transA = (TransA == CblasTrans);
+  int transB = (TransB == CblasTrans);
 
   for (i = 0; i < m; i++) {
     for (l = 0; l < n; l++) {
@@ -208,7 +208,7 @@ void my_dgemm_seq(CBLAS_LAYOUT layout,
 
 void my_dgemm(int layout, int transA, int transB, int m, int n, int k, double alpha, double *a, int lda, double *b, int ldb, double beta, double *c, int ldc) {
 
-  int i, j, kk;
+	int i, j, kk;
 
   int nb_bloc_n = (n + BLOC_SIZE - 1) / BLOC_SIZE;
   int nb_bloc_m = (m + BLOC_SIZE - 1) / BLOC_SIZE;
@@ -221,30 +221,28 @@ void my_dgemm(int layout, int transA, int transB, int m, int n, int k, double al
   int start_a, start_b, start_c;
   double current_beta = beta;
 
-  printf("nb blocks: %d, %d e %d\n", nb_bloc_m, nb_bloc_n, nb_bloc_k);
-  for (j = 0; j < nb_bloc_n; j++) { // colonnes de B
-    for (kk = 0; kk < nb_bloc_k; kk++) { // colonnes de A
-      start_c = (kk + ldc*j)*BLOC_SIZE;
-
-      current_block_n = (j < nb_bloc_n - 1) ? BLOC_SIZE : n - j*BLOC_SIZE;
-      current_block_k = (kk < nb_bloc_k - 1) ? BLOC_SIZE : k - kk*BLOC_SIZE;
-      printf("C[%d] = ", start_c);
-
-      for (i = 0; i < nb_bloc_m; i++) { // lignes de A
-	current_block_m = (i < nb_bloc_m - 1) ? BLOC_SIZE : m - i*BLOC_SIZE;
-	start_a = (kk + lda*i)*BLOC_SIZE;
-	printf("[%d + %d*%d]\n", j, ldb, kk);
-	start_b = (kk + ldb*j)*BLOC_SIZE;
-	printf("+A[%d]*B[%d](%d, %d, %d) ", start_a, start_b, current_block_m, current_block_n, current_block_k);
-	cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans,
-		    current_block_m, current_block_n,
-		    current_block_k, alpha,
-		     a+start_a, lda,
-		     b+start_b, ldb, current_beta,
-		     c+start_c, ldc);
-	current_beta = 1;
+  for (i = 0; i < nb_bloc_m; i++) { // lignes de A
+		current_block_m = (i < nb_bloc_m - 1) ? BLOC_SIZE : m - i * BLOC_SIZE;
+  	for (j = 0; j < nb_bloc_n; j++) { // colonnes de B
+      current_block_n = start_c = (i + j * ldc) * BLOC_SIZE;
+			(j < nb_bloc_n - 1) ? BLOC_SIZE : n - j * BLOC_SIZE;
+			for (kk = 0; kk < nb_bloc_k; kk++) { // colonnes de A
+				my_dgemm_seq(CblasColMajor,
+										CblasNoTrans,
+										CblasNoTrans,
+		    						/* m */ current_block_m,
+										/* n */ current_block_n,
+		    						/* k */ (kk < nb_bloc_k - 1) ? BLOC_SIZE : k - kk * BLOC_SIZE,
+										alpha,
+		     						a + (i + kk * lda) * BLOC_SIZE,
+										lda,
+		     						b + (kk + j * ldb) * BLOC_SIZE,
+										ldb,
+										current_beta,
+		     						c + start_c,
+										ldc);
+				current_beta = 1;
       }
-      printf("\n");
       current_beta = beta;
     }
   }
