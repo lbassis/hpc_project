@@ -6,42 +6,45 @@
 #include "ddot.h"
 #include "perf.h"
 
-#ifndef SIZE
-#define SIZE 3
-#endif
-
 int main(void){
-
-  double *a, *b, *c;
-  double alpha = 1.;
-  double beta = 0.;
+  
+  double *a, *b, *c, *d;
   int i;
+  int IONE = 1;
+  long long int   ISEED[4] = {0,0,0,1};   /* initial seed for zlarnv() */
 
-  a = alloc_mat(SIZE, SIZE);
-  b = alloc_mat(SIZE, SIZE);
-  c = alloc_mat(SIZE, SIZE);
+  double alpha = 1.;
+  double beta = 1.3;
+  int m =   5;
+  int n =   4;
+  int k =   2;
+  int lda = m;
+  int ldb = k;
+  int ldc = m;
 
-  init_random(SIZE, SIZE, &a, 1);
-  //  init_random(SIZE, SIZE, &c, 2);
-  init_identity(SIZE, SIZE, &c);
+  a = alloc_mat(lda, k);
+  b = alloc_mat(ldb, n);
+  c = alloc_mat(ldc, n);
+  d = alloc_mat(ldc, n);
 
-  /* a = b */
-  for (i = 0; i < SIZE*SIZE; i++) {
-    b[i] = a[i];
+  /* random a b and c = d */
+  LAPACKE_dlarnv_work(IONE, ISEED, lda*k, a);
+  LAPACKE_dlarnv_work(IONE, ISEED, ldb*n, b);
+  LAPACKE_dlarnv_work(IONE, ISEED, ldc*n, c);
+  for (i = 0; i < ldc*n; i++) c[i] = d[i];
+
+  /* affiche(m, n, d, ldc, stdout); */
+  /* c = a*b */
+  my_dgemm(0, 0, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc);
+
+  /* d = a*b */
+  cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, m, n, k, alpha, a, lda, b, ldb, beta, d, ldc);
+
+  /* print d-c */
+  for (i = 0; i < ldc*n; i++) {
+    d[i] -= c[i];
   }
-
-  /* a = a*c */
-  my_dgemm_scalaire(SIZE, a, c, a);
-  //my_dgemm(0, 0, SIZE, SIZE, SIZE, alpha, a, SIZE, c, SIZE, beta, a, SIZE);
-
-  /* b = b*c */
-  cblas_dgemm(CblasColMajor, CblasTrans, CblasNoTrans, SIZE, SIZE, SIZE, alpha, b, SIZE, c, SIZE, beta, b, SIZE);
-
-  /* print a-b */
-  for (i = 0; i < SIZE*SIZE; i++) {
-    b[i] -= a[i];
-  }
-  affiche(SIZE, SIZE, a, SIZE, stdout);
+  affiche(m, n, d, ldc, stdout);
 
   return 0;
 }

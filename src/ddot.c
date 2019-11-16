@@ -10,33 +10,39 @@ double my_ddot(const int N, const double *X, const int incX, const double *Y, co
   int i;
   double result = 0;
   for (i = 0; i < N; i++) {
-    result += X[i*incX] * Y[i*incY]; // 4 flops + 3 loads + 1 store
+    result += X[i*incX] * Y[i*incY]; // 3 flops
   }
 
   return result;
 }
 
-void my_dgemm_scalaire(int m, double *a, double *b, double* c) {
 
+void my_dgemm_scalaire(int layout, int transA, int transB, int m, int n, int kk, double alpha, double *a, int lda, double *b, int ldb, double beta, double *c, int ldc) {
   int i, j, k;
   double temp;
 
   for (i = 0; i < m; i++) {
     for (k = 0; k < m; k++) {
       temp = 0;
-      printf("c[%d] = ", i+m*k);
       for (j = 0; j < m; j++) {
-	printf("a[%d]*b[%d]+", j+m*i, j+m*k);
 	temp += a[j+m*i]*b[j+m*k];
       }
       c[i+m*k] = temp;
-      printf("\n");
     }
   }
 
+  (void)layout;
+  (void)transA;
+  (void)transB;
+  (void)kk;
+  (void)alpha;
+  (void)beta;
+  (void)lda;
+  (void)ldb;
+  (void)ldc;
 }
 
-void my_dgemm_scalaire_kij(int m, double *a, double *b, double* c) {
+void my_dgemm_scalaire_kij(int layout, int transA, int transB, int m, int n, int kk, double alpha, double *a, int lda, double *b, int ldb, double beta, double *c, int ldc) {
 
   int i, j, k;
 
@@ -48,9 +54,18 @@ void my_dgemm_scalaire_kij(int m, double *a, double *b, double* c) {
     }
   }
 
+  (void)layout;
+  (void)transA;
+  (void)transB;
+  (void)kk;
+  (void)alpha;
+  (void)beta;
+  (void)lda;
+  (void)ldb;
+  (void)ldc;
 }
 
-void my_dgemm_scalaire_ijk(int m, double *a, double *b, double* c) {
+void my_dgemm_scalaire_ijk(int layout, int transA, int transB, int m, int n, int kk, double alpha, double *a, int lda, double *b, int ldb, double beta, double *c, int ldc) {
 
   int i, j, k;
 
@@ -62,9 +77,18 @@ void my_dgemm_scalaire_ijk(int m, double *a, double *b, double* c) {
     }
   }
 
+  (void)layout;
+  (void)transA;
+  (void)transB;
+  (void)kk;
+  (void)alpha;
+  (void)beta;
+  (void)lda;
+  (void)ldb;
+  (void)ldc;
 }
 
-void my_dgemm_scalaire_jik(int m, double *a, double *b, double* c) {
+void my_dgemm_scalaire_jik(int layout, int transA, int transB, int m, int n, int kk, double alpha, double *a, int lda, double *b, int ldb, double beta, double *c, int ldc) {
 
   int i, j, k;
 
@@ -76,9 +100,18 @@ void my_dgemm_scalaire_jik(int m, double *a, double *b, double* c) {
     }
   }
 
+  (void)layout;
+  (void)transA;
+  (void)transB;
+  (void)kk;
+  (void)alpha;
+  (void)beta;
+  (void)lda;
+  (void)ldb;
+  (void)ldc;
 }
 
-void my_dgemm(int transA, int transB, int m, int n, int k, double alpha, double *a, int lda, double *b, int ldb, double beta, double *c, int ldc) {
+void my_dgemm_seq(int transA, int transB, int m, int n, int k, double alpha, double *a, int lda, double *b, int ldb, double beta, double *c, int ldc) {
 
   int i, j, l;
   double tmp;
@@ -102,6 +135,108 @@ void my_dgemm(int transA, int transB, int m, int n, int k, double alpha, double 
   }
 }
 
+
+#define BLOCK_SIZE 3
+void my_dgemm(int transA, int transB, int m, int n, int k, double alpha, double *a, int lda, double *b, int ldb, double beta, double *c, int ldc) {
+
+  int i, j, kk;
+
+  int nb_bloc_n = (n + BLOCK_SIZE - 1) / BLOCK_SIZE;
+  int nb_bloc_m = (m + BLOCK_SIZE - 1) / BLOCK_SIZE;
+  int nb_bloc_k = (k + BLOCK_SIZE - 1) / BLOCK_SIZE;
+
+  int current_block_n;
+  int current_block_m;
+  int current_block_k;
+  
+  int start_a, start_b, start_c;
+  double current_beta = beta;
+
+  printf("nb blocks: %d, %d e %d\n", nb_bloc_m, nb_bloc_n, nb_bloc_k);
+  for (j = 0; j < nb_bloc_n; j++) { // colonnes de B
+    for (kk = 0; kk < nb_bloc_k; kk++) { // colonnes de A
+      start_c = (kk + ldc*j)*BLOCK_SIZE;
+      
+      current_block_n = (j < nb_bloc_n - 1) ? BLOCK_SIZE : n - j*BLOCK_SIZE;
+      current_block_k = (kk < nb_bloc_k - 1) ? BLOCK_SIZE : k - kk*BLOCK_SIZE;
+      printf("C[%d] = ", start_c);
+
+      for (i = 0; i < nb_bloc_m; i++) { // lignes de A
+	current_block_m = (i < nb_bloc_m - 1) ? BLOCK_SIZE : m - i*BLOCK_SIZE;
+	start_a = (kk + lda*i)*BLOCK_SIZE;
+	printf("[%d + %d*%d]\n", j, ldb, kk);
+	start_b = (kk + ldb*j)*BLOCK_SIZE;
+	printf("+A[%d]*B[%d](%d, %d, %d) ", start_a, start_b, current_block_m, current_block_n, current_block_k);
+	cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans,
+		    current_block_m, current_block_n,
+		    current_block_k, alpha,
+		     a+start_a, lda,
+		     b+start_b, ldb, current_beta,
+		     c+start_c, ldc);
+	current_beta = 1;
+      }
+      printf("\n");
+      current_beta = beta;
+    }
+  }
+}
+
+
+void my_dgemm_block_fix(int transA, int transB, int m, int n, int k, double alpha, double *a, int lda, double *b, int ldb, double beta, double *c, int ldc) {
+
+  int q, r, i;
+  int nb_bloc_n = n / BLOCK_SIZE;
+  int nb_bloc_m = m / BLOCK_SIZE;
+  int nb_bloc_k = k / BLOCK_SIZE;
+  int start_a, start_b, start_c;
+  double current_beta = beta;
+
+  for (r = 0; r < nb_bloc_n; r++) {
+    for (q = 0; q < nb_bloc_m; q++) {
+      start_c = (q + ldc*r)*BLOCK_SIZE;
+      for (i = 0; i < nb_bloc_k; i++) {
+	start_a = (q + lda*i)*BLOCK_SIZE;
+	start_b = (i + ldb*r)*BLOCK_SIZE;
+	my_dgemm_seq(transA, transB, BLOCK_SIZE, BLOCK_SIZE,
+		     BLOCK_SIZE, alpha,
+		     a+start_a, lda,
+		     b+start_b, ldb, current_beta,
+		     c+start_c, ldc);
+	current_beta = 1;
+      }
+      current_beta = beta;
+    }
+  }
+}
+#define BLOC_SIZE 4
+/* void my_dgemm(int transA, int transB, int m, int n, int k, double alpha, double *a, int lda, double *b, int ldb, double beta, double *c, int ldc) { */
+
+/*   int nb_bloc_n = (n + BLOC_SIZE - 1) / BLOC_SIZE; */
+/*   int nb_bloc_m = (m + BLOC_SIZE - 1) / BLOC_SIZE; */
+/*   int min = fmin(nb_bloc_n, nb_bloc_m); */
+/*   int i, j, l; */
+
+/*   for (i = 0; i < nb_bloc_m; i++) { */
+/*     for (l = 0; l < nb_bloc_n; l++) { */
+/*       //tmp = 0; */
+/*       for (j = 0; j < BLOC_SIZE; j++) { */
+/*         my_dgemm (transA, */
+/* 		  transB, */
+/*                   (i < nb_bloc_m - 1) ? BLOC_SIZE : m - i * BLOC_SIZE, */
+/*                   (j < nb_bloc_n - 1) ? BLOC_SIZE : n - j * BLOC_SIZE, */
+/*                   (j < nb_bloc_n - 1) ? BLOC_SIZE : n - j * BLOC_SIZE, */
+/*                   1., */
+/*                   a + BLOC_SIZE * (i + l * lda), */
+/* 		  lda, */
+/*                   b + BLOC_SIZE * (l + j * ldb), */
+/*                   ldb, */
+/*                   1., */
+/*                   c + BLOC_SIZE * (i + j * ldc), */
+/*                   ldc); */
+/*       } */
+/*     } */
+/*   } */
+/* } */
 void my_daxpy (int n, double a, double *x, int incX, double *y, int incY) {
   int i;
   for (i = 0; i < n; i++) {
@@ -353,7 +488,6 @@ int my_dgesv (int matrix_layout , int n , int nrhs , double *a , int lda , int *
   int uplo_l = 1;
   int uplo_u = 0;
   int transA = 0;
-  int diag = 1;
   double alpha = 1.;
 
   /* A = LU */
@@ -366,6 +500,9 @@ int my_dgesv (int matrix_layout , int n , int nrhs , double *a , int lda , int *
   my_dtrsm (NULL, side, uplo_u, transA, 0, n,  nrhs,  alpha, a, lda, b, ldb);
 
   return 0;
+
+  (void) matrix_layout;
+  (void) ipiv;
 }
 
 #ifndef BLOC_SIZE
@@ -373,11 +510,11 @@ int my_dgesv (int matrix_layout , int n , int nrhs , double *a , int lda , int *
 #endif
 
 void my_dgetrf (int m,
-		         int n,
-		         double* a,
-	           int lda,
-		         int* ipiv,
-		         int info){
+		int n,
+		double* a,
+		int lda,
+		long int *ipiv,
+		int info){
 
   int nb_bloc_x = n / BLOC_SIZE;
   int nb_bloc_y = m / BLOC_SIZE;
@@ -391,7 +528,7 @@ void my_dgetrf (int m,
   int k = 0;
   for(k = 0; k < fmin(nb_bloc_x, nb_bloc_y); k++){
     //my_dgetf2(BLOC_SIZE, BLOC_SIZE, a + k * (BLOC_SIZE + lda), lda, NULL);
-    LAPACKE_dgetf2 (CblasColMajor, BLOC_SIZE, BLOC_SIZE, a+k*(BLOC_SIZE+lda), lda, ipiv);
+    LAPACKE_dgetf2 (CblasColMajor, BLOC_SIZE, BLOC_SIZE, a+k*(BLOC_SIZE+lda), lda, (int*)ipiv);
     int i = 0;
     for(i = k + 1; i < fmin(nb_bloc_x, nb_bloc_y); i++){
       cblas_dtrsm (/*int *Layout*/ CblasColMajor,
@@ -433,5 +570,6 @@ void my_dgetrf (int m,
   /* last bloc*/
   //my_dgetf2(BLOC_SIZE, BLOC_SIZE, a + k * (BLOC_SIZE + lda), lda, NULL);
 
-
+  (void)ipiv;
+  (void)info;
 }
