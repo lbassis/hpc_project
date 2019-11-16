@@ -26,7 +26,7 @@ int main(void){
 
 
 
-  my_dgetrf(M, N, a, M, NULL, 0);
+  my_dgetrf(LAPACK_COL_MAJOR, M, N, a, M, NULL);
   //affiche(SIZE, SIZE, a, SIZE, stdout);
   //printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
   long long ipiv[M] = {};
