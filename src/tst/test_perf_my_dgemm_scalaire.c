@@ -1,13 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-
 #include "my_lib.h"
 #include <mkl.h>
-
-#define INIT_VEC(N, ...) {int i = 0;              \
-                          for(i = 0; i < N; i++)  \
-                            __VA_ARGS__;          \
-                         }
 
 #ifndef NB_LOOP
 #define NB_LOOP 10000//1000

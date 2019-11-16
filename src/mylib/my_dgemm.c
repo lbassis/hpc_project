@@ -89,7 +89,7 @@ void my_dgemm_seq(CBLAS_LAYOUT layout,
                   double *c,
                   const int ldc) {
 
-  assert(layout != CblasColMajor);
+  assert(layout == CblasColMajor);
 
   int i, j, l;
   double tmp;

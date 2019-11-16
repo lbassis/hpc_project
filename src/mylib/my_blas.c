@@ -47,7 +47,7 @@ void my_dgemv(CBLAS_LAYOUT layout,
               double *Y,
               const int incY){
 
-  assert(layout != CblasColMajor);
+  assert(layout == CblasColMajor);
 
   int i, j;
   int transA = (TransA == CblasNoTrans);
@@ -83,7 +83,7 @@ void my_dger(CBLAS_LAYOUT layout,
              double *A,
              const int lda) {
 
-  assert(layout != CblasColMajor);
+  assert(layout == CblasColMajor);
 
   int i, j;
   for (i = 0; i < n; i++) {
@@ -106,7 +106,7 @@ void my_dtrsm(CBLAS_LAYOUT layout,
               double *b,
               const int ldb){
 
-    assert(layout != CblasColMajor);
+    assert(layout == CblasColMajor);
 
     if (n <= 0 || m <= 0) {
       fprintf(stderr, "my_dtrsm matrix dimentions invalid\n");

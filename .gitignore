@@ -1,7 +1,6 @@
 *~
 bin/
 data/*.data
-dep/*.d
+obj/
 lib/*.so
-obj/*.o
 pdf/*.pdf
