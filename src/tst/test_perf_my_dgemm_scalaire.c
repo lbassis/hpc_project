@@ -50,7 +50,7 @@ void test_version(char *id, void (*gemm)(CBLAS_LAYOUT, CBLAS_TRANSPOSE, CBLAS_TR
     perf_print_time(&stop, nb_loop);
     printf("\n");
 
-    nb_loop = (int)nb_loop/4;
+    nb_loop = (nb_loop < 10?)5:(int)nb_loop/4;
   }
 
   free(a);

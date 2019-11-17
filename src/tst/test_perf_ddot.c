@@ -51,7 +51,7 @@ int test_version(char *id, long long int step, double (*ddot)(const long long in
     perf_print_time(&stop, nb_loop);
     printf("\n");
 
-    nb_loop = (int)nb_loop/1.5;
+    nb_loop = (nb_loop < 10)? 5:(int)nb_loop/2;
   }
 
   free(a);
