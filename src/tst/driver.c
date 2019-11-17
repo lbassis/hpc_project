@@ -63,7 +63,7 @@ TEST_VEC(ddot_with_lda_vec, LDA, a[i] = 1 / (i+1); b[i] = i * i, LDA/2, a, LDA/2
 TEST_MAT(ddot_with_lda_mat, LDA, 2, a[LDA * j + i] = i, LDA/2, a, LDA/2, a + LDA * sizeof(double), LDA/2)
 
 
-void main(void){
+int main(void){
   printf("Tests :\n");
 
   CALL(ddot_zero)
@@ -74,4 +74,6 @@ void main(void){
   if(nb_fail == 0){
     printf("[SUCCESS]\n");
   }
+
+  return 0;
 }

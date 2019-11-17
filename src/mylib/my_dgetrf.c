@@ -78,20 +78,20 @@ void my_dgetrf(CBLAS_LAYOUT layout,
     }
     for(i = k + 1; i < nb_bloc_m; i++){
       for(j = k + 1; j < nb_bloc_n; j++){
-        my_dgemm (//CblasColMajor,
-                     0,//CblasNoTrans,
-                     0,//CblasNoTrans,
-                     /* m */ (i < nb_bloc_m - 1) ? BLOC_SIZE : m - i * BLOC_SIZE,
-                     /* n */ (j < nb_bloc_n - 1) ? BLOC_SIZE : n - j * BLOC_SIZE,
-                     /* k */ BLOC_SIZE,
-                     /* alpha */ -1.,
-                     /* A[i][k] */ a + BLOC_SIZE * (i + k * lda),
-                     lda,
-                     /* B[k][j] */ a + BLOC_SIZE * (k + j * lda),
-                     lda,
-                     /* beta */ 1.,
-                     /* C[i][j] */ a + BLOC_SIZE * (i + j * lda),
-                     lda);
+        my_dgemm (CblasColMajor,
+		  0,//CblasNoTrans,
+		  0,//CblasNoTrans,
+		  /* m */ (i < nb_bloc_m - 1) ? BLOC_SIZE : m - i * BLOC_SIZE,
+		  /* n */ (j < nb_bloc_n - 1) ? BLOC_SIZE : n - j * BLOC_SIZE,
+		  /* k */ BLOC_SIZE,
+		  /* alpha */ -1.,
+		  /* A[i][k] */ a + BLOC_SIZE * (i + k * lda),
+		  lda,
+		  /* B[k][j] */ a + BLOC_SIZE * (k + j * lda),
+		  lda,
+		  /* beta */ 1.,
+		  /* C[i][j] */ a + BLOC_SIZE * (i + j * lda),
+		  lda);
       }
     }
   }
