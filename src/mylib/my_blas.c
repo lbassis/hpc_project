@@ -5,6 +5,8 @@
 #include <mkl.h>
 #include "my_blas.h"
 
+#define UNROLL 7
+
 double my_ddot(const int N,
                const double *X,
                const int incX,
@@ -13,10 +15,48 @@ double my_ddot(const int N,
 
   int i;
   double result = 0;
-  for (i = 0; i < N; i++) {
-    result += X[i*incX] * Y[i*incY]; // 2 flops
+
+  if (N < UNROLL) {
+    for (i = 0; i < N; i++) {
+      result += X[i*incX] * Y[i*incY]; // 2 flops
+    }
   }
 
+  else {
+    int remaining = N % UNROLL;
+    int n = N/UNROLL;
+    
+    if (incX == 1 && incY == 1) {
+      for (i = 0; i < N-remaining; i+=UNROLL) {
+	result  += X[i] * Y[i] +
+	         + X[i+1] * Y[i+1]
+	         + X[i+2] * Y[i+2]
+	         + X[i+3] * Y[i+3]
+	         + X[i+4] * Y[i+4]
+	         + X[i+5] * Y[i+5]
+	         + X[i+6] * Y[i+6];
+      }
+
+      for (i = n*UNROLL; i < N; i++) {
+	result += X[i] * Y[i];
+      }
+    }
+    else {
+      for (i = 0; i < N-remaining; i+=UNROLL) {
+	result  += X[i*incX] * Y[i*incY] +
+	         + X[(i+1)*incX] * Y[(i+1)*incY]
+	         + X[(i+2)*incX] * Y[(i+2)*incY]
+	         + X[(i+3)*incX] * Y[(i+3)*incY]
+	         + X[(i+4)*incX] * Y[(i+4)*incY]
+	         + X[(i+5)*incX] * Y[(i+5)*incY]
+	         + X[(i+6)*incX] * Y[(i+6)*incY];
+      }
+      for (i = n*UNROLL; i < N; i++) {
+	result += X[i*incX] * Y[i*incY];
+      }
+    }
+  }
+  
   return result;
 }
 
