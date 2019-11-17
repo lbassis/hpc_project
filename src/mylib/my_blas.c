@@ -7,13 +7,13 @@
 
 #define UNROLL 7
 
-double my_ddot(const int N,
+double my_ddot(const long long int N,
                const double *X,
-               const int incX,
+               const long long int incX,
                const double *Y,
-               const int incY) {
+               const long long int incY) {
 
-  int i;
+  long long int i;
   double result = 0;
 
   if (N < UNROLL) {
@@ -23,8 +23,8 @@ double my_ddot(const int N,
   }
 
   else {
-    int remaining = N % UNROLL;
-    int n = N/UNROLL;
+    long long int remaining = N % UNROLL;
+    long long int n = N/UNROLL;
     
     if (incX == 1 && incY == 1) {
       for (i = 0; i < N-remaining; i+=UNROLL) {

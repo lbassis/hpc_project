@@ -3,11 +3,11 @@
 
 #include <mkl.h>
 
-double my_ddot(const int N,
+double my_ddot(const long long int N,
                const double *X,
-               const int incX,
+               const long long int incX,
                const double *Y,
-               const int incY);
+               const long long int incY);
 
 void my_daxpy (const int n,
               const double alpha,

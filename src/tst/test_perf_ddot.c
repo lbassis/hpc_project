@@ -18,7 +18,7 @@
 #endif
 
 
-int test_version(char *id, int step, double (*ddot)(const int, const double*, const int, const double*, const int)) {
+int test_version(char *id, long long int step, double (*ddot)(const long long int, const double*, const long long int, const double*, const long long int)) {
 
   long long int   ISEED[4] = {0,0,0,1};   /* initial seed for zlarnv() */
   
@@ -28,7 +28,7 @@ int test_version(char *id, int step, double (*ddot)(const int, const double*, co
   // Executions a vide, flush potentiel, ...
 
   // Performance d'une addition scalaire
-  int n = 0;
+  long long int n = 0;
   double *a = alloc_vec(MAX_SIZE);
   double *b = alloc_vec(MAX_SIZE);
   
@@ -46,7 +46,7 @@ int test_version(char *id, int step, double (*ddot)(const int, const double*, co
     perf(&stop);
     perf_diff(&start, &stop);
     performance = perf_mflops(&stop, flop * nb_loop);
-    printf("%s, %d, %d, %lf, ", id, n, step, performance);
+    printf("%s, %lld, %lld, %lf, ", id, n, step, performance);
 
     perf_print_time(&stop, nb_loop);
     printf("\n");
