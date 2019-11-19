@@ -6,24 +6,18 @@
 #include <mkl.h>
 
 #ifndef NB_LOOP
-#define NB_LOOP 100
+#define NB_LOOP 10000
 #endif
 
 #ifndef MIN_SIZE
-#define MIN_SIZE 50
+#define MIN_SIZE 32
 #endif
 
 #ifndef MAX_SIZE
-#define MAX_SIZE 175
+#define MAX_SIZE 1024
 #endif
 
-void test_version(char *id, void (*gemm)(CBLAS_LAYOUT,
-                                          CBLAS_TRANSPOSE,
-                                          CBLAS_TRANSPOSE,
-                                          int, int, int,
-                                          double, double*,
-                                          int, double*,
-                                          int, double, double*, int)){
+void test_version(char *id, void (*gemm)(CBLAS_LAYOUT, CBLAS_TRANSPOSE, CBLAS_TRANSPOSE, const int, const int, const int, const double, const double*, const int, const double*, const int, const double, double*, const int)){
 
   long long int   ISEED[4] = {0,0,0,1};   /* initial seed for zlarnv() */
   long nb_loop = NB_LOOP;
@@ -40,10 +34,9 @@ void test_version(char *id, void (*gemm)(CBLAS_LAYOUT,
   LAPACKE_dlarnv_work(1, ISEED, MAX_SIZE*MAX_SIZE, a);
   LAPACKE_dlarnv_work(1, ISEED, MAX_SIZE*MAX_SIZE, b);
   LAPACKE_dlarnv_work(1, ISEED, MAX_SIZE*MAX_SIZE, c);
-  int i = 0;
-  double result = 0;
-  for(n = MIN_SIZE; n < MAX_SIZE; n += 10){
-    //for(i = 0)
+
+  for(n = MIN_SIZE; n <= MAX_SIZE; n *= 2){
+    long flop = 3*n*n;
     perf(&start);
 
     for(l = 0; l < nb_loop; l++){
