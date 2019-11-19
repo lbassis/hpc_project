@@ -20,15 +20,13 @@ double my_ddot(const int N,
     for (i = 0; i < N; i++) {
       result += X[i*incX] * Y[i*incY]; // 2 flops
     }
-  }
-
-  else {
+  } else {
     int remaining = N % UNROLL;
     int n = N/UNROLL;
-    
+
     if (incX == 1 && incY == 1) {
       for (i = 0; i < N-remaining; i+=UNROLL) {
-	result  += X[i] * Y[i] +
+	       result  += X[i] * Y[i] +
 	         + X[i+1] * Y[i+1]
 	         + X[i+2] * Y[i+2]
 	         + X[i+3] * Y[i+3]
@@ -38,12 +36,11 @@ double my_ddot(const int N,
       }
 
       for (i = n*UNROLL; i < N; i++) {
-	result += X[i] * Y[i];
+	       result += X[i] * Y[i];
       }
-    }
-    else {
+    } else {
       for (i = 0; i < N-remaining; i+=UNROLL) {
-	result  += X[i*incX] * Y[i*incY] +
+	       result  += X[i*incX] * Y[i*incY] +
 	         + X[(i+1)*incX] * Y[(i+1)*incY]
 	         + X[(i+2)*incX] * Y[(i+2)*incY]
 	         + X[(i+3)*incX] * Y[(i+3)*incY]
@@ -52,11 +49,11 @@ double my_ddot(const int N,
 	         + X[(i+6)*incX] * Y[(i+6)*incY];
       }
       for (i = n*UNROLL; i < N; i++) {
-	result += X[i*incX] * Y[i*incY];
+	       result += X[i*incX] * Y[i*incY];
       }
     }
   }
-  
+
   return result;
 }
 

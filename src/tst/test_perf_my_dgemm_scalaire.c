@@ -10,14 +10,20 @@
 #endif
 
 #ifndef MIN_SIZE
-#define MIN_SIZE 128
+#define MIN_SIZE 50
 #endif
 
 #ifndef MAX_SIZE
-#define MAX_SIZE 2048
+#define MAX_SIZE 175
 #endif
 
-void test_version(char *id, void (*gemm)(CBLAS_LAYOUT, CBLAS_TRANSPOSE, CBLAS_TRANSPOSE, int, int, int, double, double*, int, double*, int, double, double*, int)){
+void test_version(char *id, void (*gemm)(CBLAS_LAYOUT,
+                                          CBLAS_TRANSPOSE,
+                                          CBLAS_TRANSPOSE,
+                                          int, int, int,
+                                          double, double*,
+                                          int, double*,
+                                          int, double, double*, int)){
 
   long long int   ISEED[4] = {0,0,0,1};   /* initial seed for zlarnv() */
   long nb_loop = NB_LOOP;
@@ -34,37 +40,38 @@ void test_version(char *id, void (*gemm)(CBLAS_LAYOUT, CBLAS_TRANSPOSE, CBLAS_TR
   LAPACKE_dlarnv_work(1, ISEED, MAX_SIZE*MAX_SIZE, a);
   LAPACKE_dlarnv_work(1, ISEED, MAX_SIZE*MAX_SIZE, b);
   LAPACKE_dlarnv_work(1, ISEED, MAX_SIZE*MAX_SIZE, c);
-
+  int i = 0;
   double result = 0;
-  for(n = MIN_SIZE; n < MAX_SIZE; n *= 2){
-    long flop = 3*n*n;
+  for(n = MIN_SIZE; n < MAX_SIZE; n += 10){
+    //for(i = 0)
     perf(&start);
 
     for(l = 0; l < nb_loop; l++){
-      gemm(CblasColMajor, CblasNoTrans, CblasNoTrans, n, n, n, 1., a, n, b, n, 0, c, n);
+      gemm(CblasColMajor, CblasNoTrans, CblasNoTrans, n, n, n, 1., a, n, b, n, 0., c, n);
     }
     perf(&stop);
     perf_diff(&start, &stop);
-    performance = perf_mflops(&stop, flop * nb_loop);
-    printf("%s, %d, %lf, ", id, n, performance);
+    performance = perf_mflops(&stop, 2 * n * n * n * nb_loop);
+    printf("%d, %lf, ", n, performance);
 
     perf_print_time(&stop, nb_loop);
-    printf("\n");
 
-    nb_loop = (int)nb_loop/1.5;
+
+
   }
 
   free(a);
   free(b);
-
+  free(c);
   return 0;
 }
 
 int main() {
-  printf("version, n, Mflops, us\n");
+  printf("n, Mflops_mkl, ms_mkl, Mflops_ikj, ms_ikj, Mflops_kij, ms_kij, Mflops_ijk, ms_ijk, Mflops_jik, ms_jik\n");
   test_version("mkl", &cblas_dgemm);
   test_version("ikj", &my_dgemm_scalaire);
   test_version("kij", &my_dgemm_scalaire_kij);
   test_version("ijk", &my_dgemm_scalaire_ijk);
   test_version("jik", &my_dgemm_scalaire_jik);
+  printf("\n");
 }

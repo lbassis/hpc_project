@@ -11,7 +11,7 @@
 
 
 #ifndef BLOC_SIZE
-#define BLOC_SIZE 3
+#define BLOC_SIZE 130
 #endif
 
 
@@ -78,9 +78,9 @@ void my_dgetrf(CBLAS_LAYOUT layout,
     }
     for(i = k + 1; i < nb_bloc_m; i++){
       for(j = k + 1; j < nb_bloc_n; j++){
-        my_dgemm (//CblasColMajor,
-                     0,//CblasNoTrans,
-                     0,//CblasNoTrans,
+        my_dgemm (CblasColMajor,
+                     CblasNoTrans,
+                     CblasNoTrans,
                      /* m */ (i < nb_bloc_m - 1) ? BLOC_SIZE : m - i * BLOC_SIZE,
                      /* n */ (j < nb_bloc_n - 1) ? BLOC_SIZE : n - j * BLOC_SIZE,
                      /* k */ BLOC_SIZE,

@@ -34,7 +34,7 @@ void perf_printmicro(const perf_t *p) {
   printf("%ld\n", p->tv_usec + (p->tv_sec * 1000000));
 }
 
-double perf_mflops(const perf_t *p, const long nb_op) {
+double perf_mflops(const perf_t *p, const long long nb_op) {
   return (double)nb_op / (p->tv_sec * 1000000 + p->tv_usec);
 }
 

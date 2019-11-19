@@ -12,7 +12,7 @@ void perf_printh(const perf_t *p);
 
 void perf_printmicro(const perf_t *p);
 
-double perf_mflops(const perf_t *p, const long nb_op);
+double perf_mflops(const perf_t *p, const long long nb_op);
 
 void perf_print_time(const perf_t *p, long div);
 

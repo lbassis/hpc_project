@@ -12,15 +12,15 @@
                          }
 
 #ifndef NB_LOOP
-#define NB_LOOP 10000//1000
+#define NB_LOOP 100//1000
 #endif
 
 #ifndef MIN_SIZE
-#define MIN_SIZE 100
+#define MIN_SIZE 10000
 #endif
 
 #ifndef MAX_SIZE
-#define MAX_SIZE 1000000
+#define MAX_SIZE 10000000
 #endif
 
 
@@ -33,7 +33,7 @@ int main(int argc, char* argv[]){
 
   double performance;
   perf_t start,stop;
-  printf("n, Mflops, ms\n");
+  printf("n, Mflops, ms, Mflops_mkl, ms_mkl\n");
   long flop = 2;
 
   // Executions a vide, flush potentiel, ...
@@ -43,7 +43,7 @@ int main(int argc, char* argv[]){
   double *a = alloc_vec(MAX_SIZE), *b = alloc_vec(MAX_SIZE);
   INIT_VEC(MAX_SIZE, a[i] = i + 1; b[i] = i + 1)
   double result = 0;
-  for(n = MIN_SIZE; n < MAX_SIZE; n += n / 4){
+  for(n = MIN_SIZE; n < MAX_SIZE; n += n / 8){
     perf(&start);
     for(l = 0; l < nb_loop; l++){
       result = my_ddot(n, a, 1, b, 1);
@@ -51,7 +51,19 @@ int main(int argc, char* argv[]){
     perf(&stop);
     perf_diff(&start, &stop);
     printf("%d, ", n);
-    performance = perf_mflops(&stop, flop * n);
+    performance = perf_mflops(&stop, flop * n * NB_LOOP);
+    printf("%lf, ", performance);
+
+    perf_print_time(&stop, nb_loop);
+
+    perf(&start);
+    for(l = 0; l < nb_loop; l++){
+      result = cblas_ddot(n, a, 1, b, 1);
+    }
+    perf(&stop);
+    perf_diff(&start, &stop);
+    printf("%d, ", n);
+    performance = perf_mflops(&stop, flop * n * NB_LOOP);
     printf("%lf, ", performance);
 
     perf_print_time(&stop, nb_loop);

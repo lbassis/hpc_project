@@ -1,4 +1,6 @@
-file <- "ddot"
+#args <- commandArgs(trailingOnly=TRUE)
+#print(args)
+file <- "gemm_bloc_cache" #args[1]
 data <- read.table(paste(paste("data/", file, sep = ""), ".data", sep = ""),header=TRUE,sep=",")
 
 
@@ -6,11 +8,11 @@ data <- read.table(paste(paste("data/", file, sep = ""), ".data", sep = ""),head
 #autos_data <- read.table("C:/R/autos.dat", header=T, sep="\t")
 
 # Define colors to be used for cars, trucks, suvs
-plot_colors <- c(rgb(r=0.0,g=0.0,b=0.9), "red", "forestgreen")
+plot_colors <- c(rgb(r=0.0,g=0.0,b=0.9), "red")
 
 # Start PDF device driver to save output to figure.pdf
 #pdf(file=paste(output, ".pdf", sep = ""), height=3.5, width=5)
-pdf(file=paste("pdf/", paste(file, ".pdf", sep = ""), sep = ""))
+pdf(file=paste("pdf/", paste(file, "_flop.pdf", sep = ""), sep = ""))
 
 # Trim off excess margin space (bottom, left, top, right)
 #par(mar=c(4.2, 3.8, 0.2, 0.2))
@@ -18,12 +20,19 @@ pdf(file=paste("pdf/", paste(file, ".pdf", sep = ""), sep = ""))
 # Graph autos using a y axis that uses the full range of value
 # in autos_data. Label axes with smaller font and use larger
 # line widths.
-plot(data$n, data$ms, type="l", col=plot_colors[1],
-   #xlim=range(data$n), ylim=range(data$ms),
-   xlab="Size of vector", ylab="Time", main="Time of ddot applied to two contiguous vectors")
 
-plot(data$n, data$Mflops, type="l", col=plot_colors[1], xlab="Size of vector", ylab="Mflops", main="Mflops of ddot applied to two contiguous vectors")
-#points((100:1000000)/260, type="l", col=plot_colors[2])
+
+#plot(data$n, data$ms, type="l", col=plot_colors[1], xlab="Size of matrix", ylab="Time (us)")
+#points(data$n, data$ms_mkl, type="l", col=plot_colors[2])
+
+#lis <- loess(data$ms ~ data$n)
+#z <- predict(lis, data$n)
+#points(data$n, z, type="l", col=plot_colors[2])
+#legend("topleft", c("my_lib", "mkl"), cex=0.8, col=plot_colors, lwd=2);
+
+plot(data$n, data$Mflops, type="l", col=plot_colors[1], xlab="Size of bloc", ylab="Mflops")
+#points(data$n, data$Mflops_mkl, type="l", col=plot_colors[2])
+
 # Make x axis tick marks without labels
 #axis(1, lab=F)
 
@@ -49,8 +58,6 @@ box()
 
 # Create a legend in the top-left corner that is slightly
 # smaller and has no border
-#legend("topleft", names(data), cex=0.8, col=plot_colors,
-#   lty=1:3, lwd=2, bty="n");
 
 # Turn off device driver (to flush output to PDF)
 dev.off()

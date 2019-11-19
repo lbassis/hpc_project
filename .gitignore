@@ -1,6 +1,8 @@
 *~
 bin/
-data/*.data
+data/
 obj/
-lib/*.so
-pdf/*.pdf
+lib/
+pdf/
+*.Rout
+*.RData
