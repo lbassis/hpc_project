@@ -1,8 +1,10 @@
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "util.h"
 #include "perf.h"
+#include "defines.h"
 
 #include "my_lib.h"
 
@@ -25,7 +27,7 @@
 
 
 
-int main(int argc, char* argv[]){
+int main(void){
   long nb_loop = NB_LOOP;
   /*if(argc == 1){
     nb_loop = atoi(argv[0]);
@@ -43,6 +45,7 @@ int main(int argc, char* argv[]){
   double *a = alloc_vec(MAX_SIZE), *b = alloc_vec(MAX_SIZE);
   INIT_VEC(MAX_SIZE, a[i] = i + 1; b[i] = i + 1)
   double result = 0;
+  double result_mkl = 0;
   for(n = MIN_SIZE; n < MAX_SIZE; n += n / 8){
     perf(&start);
     for(l = 0; l < nb_loop; l++){
@@ -58,7 +61,7 @@ int main(int argc, char* argv[]){
 
     perf(&start);
     for(l = 0; l < nb_loop; l++){
-      result = cblas_ddot(n, a, 1, b, 1);
+      result_mkl = cblas_ddot(n, a, 1, b, 1);
     }
     perf(&stop);
     perf_diff(&start, &stop);
@@ -69,9 +72,7 @@ int main(int argc, char* argv[]){
     perf_print_time(&stop, nb_loop);
     printf("\n");
     // Verification
-    /*if(fabs(result - cblas_ddot(n, a, 1, b, 1)) > ESP){
-      printf("FAIL\n");
-    }*/
+    assert(result - result_mkl < ESP);
 
 
 

@@ -19,6 +19,7 @@
 
 void test_version(char *id, void (*gemm)(CBLAS_LAYOUT, CBLAS_TRANSPOSE, CBLAS_TRANSPOSE, const int, const int, const int, const double, const double*, const int, const double*, const int, const double, double*, const int)){
 
+  (void) id;
   long long int   ISEED[4] = {0,0,0,1};   /* initial seed for zlarnv() */
   long nb_loop = NB_LOOP;
 
@@ -36,7 +37,6 @@ void test_version(char *id, void (*gemm)(CBLAS_LAYOUT, CBLAS_TRANSPOSE, CBLAS_TR
   LAPACKE_dlarnv_work(1, ISEED, MAX_SIZE*MAX_SIZE, c);
 
   for(n = MIN_SIZE; n <= MAX_SIZE; n *= 2){
-    long flop = 3*n*n;
     perf(&start);
 
     for(l = 0; l < nb_loop; l++){
@@ -56,12 +56,11 @@ void test_version(char *id, void (*gemm)(CBLAS_LAYOUT, CBLAS_TRANSPOSE, CBLAS_TR
   free(a);
   free(b);
   free(c);
-  return 0;
 }
 
 int main() {
   printf("n, Mflops_mkl, ms_mkl, Mflops_ikj, ms_ikj, Mflops_kij, ms_kij, Mflops_ijk, ms_ijk, Mflops_jik, ms_jik\n");
-  test_version("mkl", &cblas_dgemm);
+  //test_version("mkl", &cblas_dgemm);
   test_version("ikj", &my_dgemm_scalaire);
   test_version("kij", &my_dgemm_scalaire_kij);
   test_version("ijk", &my_dgemm_scalaire_ijk);

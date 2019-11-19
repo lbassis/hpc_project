@@ -12,8 +12,11 @@ UTILS_OBJ = $(addprefix obj/utilities/,$(notdir $(UTILS_SRC:.c=.o)))
 
 
 .PHONY: default
-default: $(BIN)
+default: start $(BIN)
+	@echo -e '\033[0;36mCompilation successful \033[0m'
 
+start:
+	@echo -e '\033[0;36mStart of compilation \033[0m'
 
 .PHONY: install uninstall
 install:
@@ -43,13 +46,13 @@ obj/utilities/%.o: src/utilities/%.c
 obj/%.o: src/tst/%.c
 	@$(CC) -o $@ $(CFLAGS) -c $<
 
-bin/%.exe: obj/%.o $(UTILS_OBJ) lib/mylib.so
+bin/%.exe: obj/%.o $(UTILS_OBJ) lib/libmyblas.so
 	@$(CC) -o $@ $(CFLAGS) $^ $(LDLIBS)
 
 lib/mylib.so: $(LIB_OBJ)
-	@$(CC) $(CFLAGS) -shared -o lib/mylib.so $^ $(LDLIBS)
+	@$(CC) $(CFLAGS) -shared -o lib/libmyblas.so $^ $(LDLIBS)
 
-lib: lib/mylib.so
+lib: lib/libmyblas.so
 
 .PHONY: graph
 graph:

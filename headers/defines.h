@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <cblas.h>
+#include <mkl_cblas.h>
 
+#define ESP 1.11e-16
 
-#define BLOC_SIZE 100
+#define BLOC_SIZE 130

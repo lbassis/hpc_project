@@ -42,7 +42,6 @@ int main() {
   LAPACKE_dlarnv_work(IONE, ISEED, MAX_SIZE*MAX_SIZE, c);
 
   long long ipiv[MAX_SIZE] = {};
-  double result = 0;
   for(n = MIN_SIZE; n < MAX_SIZE; n+=2){
     perf(&start);
     for(l = 0; l < nb_loop; l++){

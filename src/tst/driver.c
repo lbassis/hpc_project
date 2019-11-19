@@ -5,6 +5,8 @@
 
 #include "util.h"
 #include "my_lib.h"
+#include "defines.h"
+
 
 #define TEST_MAT(NAME, N, M, INIT, ...) void test_ ## NAME ## _(void){                        \
                                           double *a = alloc_mat(N, M), *b = alloc_mat(N, M);  \
@@ -42,7 +44,7 @@
 
 #define CALL(NAME) test_ ## NAME ## _();
 
-#define ESP 1.11e-16
+
 #define SIZE 100
 #define LDA 10
 
