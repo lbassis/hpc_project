@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <math.h>
 #include <mkl.h>
+
 #include "my_blas.h"
 #include "my_dgemm.h"
 
@@ -187,24 +188,126 @@ void my_dgemm_seq(CBLAS_LAYOUT layout,
   int transA = (TransA == CblasTrans);
   int transB = (TransB == CblasTrans);
 
-  for (i = 0; i < m; i++) {
-    for (l = 0; l < n; l++) {
-      tmp = 0;
-      for (j = 0; j < k; j++) {
-	       if (!transA && !transB) {
-	          tmp += a[j*lda+i]*b[j+ldb*l];
-         }else if (transA && !transB) {
-            tmp += a[j+lda*i]*b[j+ldb*l];
-         }else if (!transA && transB) {
-            tmp += a[j * lda + i]*b[j*ldb+l];
-         }else { //transA && transB
-            tmp += a[j + lda * i]*b[j*ldb+l];
-         }
-      }
-      c[i+ldc*l] = c[i+ldc*l]*beta + tmp*alpha;
-    }
-  }
+	if (!transB) {
+		if(!transA){
+			for (i = 0; i < m; i++) {
+				for (l = 0; l < n; l++) {
+					tmp = 0;
+					for (j = 0; j < k; j++) {
+							tmp += a[j*lda+i]*b[j+ldb*l];
+					}
+					c[i+ldc*l] = c[i+ldc*l]*beta + tmp*alpha;
+				}
+			}
+		}else { // transA && !transB
+			for (i = 0; i < m; i++) {
+    		for (l = 0; l < n; l++) {
+      		tmp = 0;
+      		for (j = 0; j < k; j++) {
+	          tmp += a[j+lda*i]*b[j+ldb*l];
+    			}
+      		c[i+ldc*l] = c[i+ldc*l]*beta + tmp*alpha;
+    		}
+  		}
+		}
+	}else{ // transB
+		if(!transA){
+			for (i = 0; i < m; i++) { //!transA && transB
+	    	for (l = 0; l < n; l++) {
+	      	tmp = 0;
+	      	for (j = 0; j < k; j++) {
+		          tmp += a[j * lda + i]*b[j*ldb+l];
+	      	}
+	      	c[i+ldc*l] = c[i+ldc*l]*beta + tmp*alpha;
+	    	}
+	  	}
+		}else {
+			for (i = 0; i < m; i++) { //transA && transB
+	    	for (l = 0; l < n; l++) {
+	      	tmp = 0;
+	      	for (j = 0; j < k; j++) {
+		          tmp += a[j + lda * i]*b[l + j * ldb];
+	      	}
+	      	c[i+ldc*l] = c[i+ldc*l]*beta + tmp*alpha;
+	    	}
+	  	}
+		}
+	}
 }
+
+void my_dgemm_seq_omp(CBLAS_LAYOUT layout,
+                  CBLAS_TRANSPOSE TransA,
+                  CBLAS_TRANSPOSE TransB,
+                  const int m,
+                  const int n,
+                  const int k,
+                  const double alpha,
+                  const double *a,
+                  const int lda,
+                  const double *b,
+                  const int ldb,
+                  const double beta,
+                  double *c,
+                  const int ldc) {
+
+  assert(layout == CblasColMajor);
+
+  int i, j, l;
+  double tmp;
+  int transA = (TransA == CblasTrans);
+  int transB = (TransB == CblasTrans);
+
+	if (!transB) {
+		if(!transA){
+			#pragma omp parallel for collapse(2) private(tmp, j)
+			for (i = 0; i < m; i++) {
+				for (l = 0; l < n; l++) {
+					tmp = 0;
+					for (j = 0; j < k; j++) {
+							tmp += a[j*lda+i]*b[j+ldb*l];
+					}
+					c[i+ldc*l] = c[i+ldc*l]*beta + tmp*alpha;
+				}
+			}
+		}else { // transA && !transB
+			#pragma omp parallel for collapse(2) private(tmp, j)
+			for (i = 0; i < m; i++) {
+    		for (l = 0; l < n; l++) {
+      		tmp = 0;
+      		for (j = 0; j < k; j++) {
+	          tmp += a[j+lda*i]*b[j+ldb*l];
+    			}
+      		c[i+ldc*l] = c[i+ldc*l]*beta + tmp*alpha;
+    		}
+  		}
+		}
+	}else{ // transB
+		if(!transA){
+			#pragma omp parallel for collapse(2) private(tmp, j)
+			for (i = 0; i < m; i++) { //!transA && transB
+	    	for (l = 0; l < n; l++) {
+	      	tmp = 0;
+	      	for (j = 0; j < k; j++) {
+		          tmp += a[j * lda + i]*b[j*ldb+l];
+	      	}
+	      	c[i+ldc*l] = c[i+ldc*l]*beta + tmp*alpha;
+	    	}
+	  	}
+		}else {
+			#pragma omp parallel for collapse(2) private(tmp, j)
+			for (i = 0; i < m; i++) { //transA && transB
+	    	for (l = 0; l < n; l++) {
+	      	tmp = 0;
+	      	for (j = 0; j < k; j++) {
+		          tmp += a[j + lda * i]*b[l + j * ldb];
+	      	}
+	      	c[i+ldc*l] = c[i+ldc*l]*beta + tmp*alpha;
+	    	}
+	  	}
+		}
+	}
+}
+
 
 void my_dgemm(CBLAS_LAYOUT layout,
                   CBLAS_TRANSPOSE TransA,

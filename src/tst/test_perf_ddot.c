@@ -21,7 +21,7 @@
 int test_version(char *id, long long int step, double (*ddot)(const long long int, const double*, const long long int, const double*, const long long int)) {
 
   long long int   ISEED[4] = {0,0,0,1};   /* initial seed for zlarnv() */
-  
+
   int l, nb_loop = NB_LOOP;
   double performance;
   perf_t start,stop;
@@ -31,14 +31,14 @@ int test_version(char *id, long long int step, double (*ddot)(const long long in
   long long int n = 0;
   double *a = alloc_vec(MAX_SIZE);
   double *b = alloc_vec(MAX_SIZE);
-  
+
   LAPACKE_dlarnv_work(1, ISEED, MAX_SIZE, a);
   LAPACKE_dlarnv_work(1, ISEED, MAX_SIZE, b);
 
   double result;
   for(n = MIN_SIZE; n < MAX_SIZE; n *= 2){
     long flop = 2*n/step;
-    
+
     perf(&start);
     for(l = 0; l < nb_loop; l++){
       result = ddot(n/step, a, step, b, step);
@@ -65,11 +65,11 @@ int main() {
   printf("version, n, step, Mflops, us\n");
 
   double my_one = test_version("my", 1, &my_ddot);
-  double mkl_one = test_version("mkl", 1, &cblas_ddot); 
+  double mkl_one = test_version("mkl", 1, &cblas_ddot);
   double my_two = test_version("my", 2, &my_ddot);
-  double mkl_two = test_version("mkl", 2, &cblas_ddot); 
-  
-             
+  double mkl_two = test_version("mkl", 2, &cblas_ddot);
+
+
 
   if (my_one == mkl_one && my_two == mkl_two) {
     printf("\nOK\n");
@@ -77,6 +77,6 @@ int main() {
   else {
     printf("\nFailed\n");
   }
-    
+
   return 0;
 }

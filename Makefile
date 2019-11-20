@@ -9,26 +9,28 @@ LIB_OBJ = $(addprefix obj/mylib/,$(notdir $(LIB_SRC:.c=.o)))
 UTILS_SRC = $(wildcard src/utilities/*.c)
 UTILS_OBJ = $(addprefix obj/utilities/,$(notdir $(UTILS_SRC:.c=.o)))
 
-
+LIB_DIR = lib2
 
 .PHONY: default
-default: start $(BIN)
+default: start lib $(BIN)
 	@echo -e '\033[0;36mCompilation successful \033[0m'
 
 start:
 	@echo -e '\033[0;36mStart of compilation \033[0m'
+	rm -f $(LIB_DIR)/libmyblas.so.
 
 .PHONY: install uninstall
 install:
-	mkdir -p bin lib obj obj/mylib obj/utilities pdf data
+	mkdir -p bin $(LIB_DIR) obj obj/mylib obj/utilities pdf data
 
 uninstall:
-	rm -rf bin lib obj obj/mylib obj/utilities pdf data
+	rm -rf bin $(LIB_DIR) obj obj/mylib obj/utilities pdf data
 
 CFLAGS = -O3 -Wall -Wextra
 CFLAGS += -I./headers
 #CFLAGS += -I/home/cisd-simonin/myblas
 CFLAGS +=  -DMKL_ILP64 -m64 -I${MKLROOT}/include
+CFLAGS += -fopenmp
 
 LDLIBS = -L${MKLROOT}/lib/intel64 -Wl,--no-as-needed -lmkl_intel_ilp64 -lmkl_gnu_thread -lmkl_core -lgomp -lpthread -lm -ldl
 #LDLIBS += -L/home/cisd-simonin/myblas/build
@@ -46,13 +48,14 @@ obj/utilities/%.o: src/utilities/%.c
 obj/%.o: src/tst/%.c
 	@$(CC) -o $@ $(CFLAGS) -c $<
 
-bin/%.exe: obj/%.o $(UTILS_OBJ) lib/libmyblas.so
+bin/%.exe: obj/%.o $(UTILS_OBJ) $(LIB_DIR)/libmyblas.so
 	@$(CC) -o $@ $(CFLAGS) $^ $(LDLIBS)
 
-lib/mylib.so: $(LIB_OBJ)
-	@$(CC) $(CFLAGS) -shared -o lib/libmyblas.so $^ $(LDLIBS)
+$(LIB_DIR)/libmyblas.so: $(LIB_OBJ)
+	@$(CC) $(CFLAGS) -shared -o $(LIB_DIR)/libmyblas.so $^ $(LDLIBS)
 
-lib: lib/libmyblas.so
+.PHONY: lib
+lib: $(LIB_DIR)/libmyblas.so
 
 .PHONY: graph
 graph:

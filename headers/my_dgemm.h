@@ -110,4 +110,20 @@ void my_dgemm_bloc(CBLAS_LAYOUT layout,
                   const int ldc,
 								  const int bloc_size);
 
+
+void my_dgemm_seq_omp(CBLAS_LAYOUT layout,
+                  CBLAS_TRANSPOSE TransA,
+                  CBLAS_TRANSPOSE TransB,
+                  const int m,
+                  const int n,
+                  const int k,
+                  const double alpha,
+                  const double *a,
+                  const int lda,
+                  const double *b,
+                  const int ldb,
+                  const double beta,
+                  double *c,
+                  const int ldc);
+
 #endif
