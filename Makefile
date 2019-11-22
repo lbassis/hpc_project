@@ -54,19 +54,27 @@ bin/%.exe: obj/%.o $(UTILS_OBJ) $(LIB_DIR)/libmyblas.so
 $(LIB_DIR)/libmyblas.so: $(LIB_OBJ)
 	@$(CC) $(CFLAGS) -shared -o $(LIB_DIR)/libmyblas.so $^ $(LDLIBS)
 
-.PHONY: lib
+.PHONY: lib check graph
 lib: $(LIB_DIR)/libmyblas.so
 
-.PHONY: graph
-graph:
+check:
+	OLD_LIB_DIR=$(LIB_DIR)
+	LIB_DIR=check/build
+	$(MAKE) lib
+	LIB_DIR=$(OLD_LIB_DIR)
+
+graph: default
 	bash graph/make_data.sh
 
 .PHONY: clean clean_deps clean_graph clean_all
 
-clean_all: clean clean_graph
+clean_all: clean clean_graph clean_lib
 
 clean:
 	rm -f bin/* obj/*.o
+
+clean_lib:
+	rm -f $(LIB_DIR)/*.so
 
 clean_graph:
 	rm -f data/*.data pdf/*.pdf
