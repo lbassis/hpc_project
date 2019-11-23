@@ -7,59 +7,84 @@
 #include "perf.h"
 #include "my_lib.h"
 
-#ifndef SIZE
-#define SIZE 10
-#endif
-
 int main(void){
 
   double *a, *b, *c;
-  int i, j;
+  int i;
+  int IONE = 1;
+  long long int   ISEED[4] = {0,0,0,1};   /* initial seed for zlarnv() */
 
-  a = alloc_mat(SIZE, SIZE);
-  b = alloc_mat(SIZE, SIZE);
-  c = alloc_mat(SIZE, SIZE);
-  init_random(SIZE, SIZE, a, 2);
-  init_random(SIZE, SIZE, b, 1);
-  for (i = 0; i < SIZE; i++) {
-    for(j = 0; j < SIZE; j++){
-      c[i + j * SIZE] = b[i + SIZE * j];
+  double alpha = 4.;
+  int m =   150;
+  int n =   150;
+  int lda = m;
+  int ldb = n;
+
+  a = alloc_mat(lda, n);
+  b = alloc_mat(ldb, m);
+  c = alloc_mat(ldb, m);
+
+  int tr[2] = {CblasTrans, CblasNoTrans};
+  char* tr_name[2] = {"Trans", "NoTrans"};
+  int u[2] = {CblasUnit, CblasNonUnit};
+  char* u_name[2] = {"Unit", "NoUnit"};
+  int l[2] = {CblasLower, CblasUpper};
+  char* l_name[2] = {"Lower", "Upper"};
+  int r[2] = {CblasLeft, CblasRight};
+  char* r_name[2] = {"Left", "Right"};
+  int ta, ui, li, ri;
+  for(ta = 0; ta < 2; ta++){
+    for(ui = 0; ui < 2; ui++){
+      for(li = 0; li < 2; li++){
+        for(ri = 0; ri < 2; ri++){
+
+          printf("%s, %s, %s, %s\n", tr_name[ta], u_name[ui], l_name[li], r_name[ri]);
+          /* random a b and c = d */
+          LAPACKE_dlarnv_work(IONE, ISEED, lda*n, a);
+          LAPACKE_dlarnv_work(IONE, ISEED, ldb*m, b);
+
+          for (i = 0; i < ldb * m; i++) c[i] = b[i];
+          //affiche(m, n, b, lda, stdout);
+
+          my_dtrsm(/*int *Layout*/   CblasColMajor,
+                  /*int side*/      r[ri],
+                  /*int uplo*/      l[li],
+                  /*int transA*/    tr[ta],
+                  /*int diag*/      u[ui],
+                  /*int m*/         m,
+                  /*int n*/         n,
+                  /*double alpha*/  alpha,
+                  /*double *a*/     a,
+                  /*int lda*/       lda,
+                  /*double *b*/     b,
+                  /*int ldb*/       ldb);
+
+          cblas_dtrsm(/*int *Layout*/ CblasColMajor,
+                      /*int side*/      r[ri],
+                      /*int uplo*/      l[li],
+                      /*int transA*/    tr[ta],
+                      /*int diag*/      u[ui],
+                      /*int m */        m,
+                      /*int n */        n,
+                      /*double alpha*/  alpha,
+                      /*double *a*/     a,
+                      /*int lda*/       lda,
+                      /*double *b*/     c,
+                      /*int ldb*/       ldb);
+
+            //printf("\n");
+            //affiche(m, n, c, ldb, stdout);
+            //printf("\n");
+            //affiche(m, n, b, ldb, stdout);
+            for (i = 0; i < ldb * m; i++) c[i] -= b[i];
+
+            printf("||cblas_dtrsm - my_dtrsm||1 = %lf\n", LAPACKE_dlange(CblasColMajor, 'M', n, m, c, ldb));
+            printf("_____\n");
+        }
+      }
     }
   }
-  affiche(SIZE, SIZE, b, SIZE, stdout);
-  printf("_______\n");
-  my_dtrsm(/*int *Layout*/   CblasColMajor,
-            /*int side*/      CblasLeft,
-            /*int uplo*/      CblasUpper,
-            /*int transA*/    CblasTrans,
-            /*int diag*/      CblasUnit,
-            /*int m*/         SIZE,
-            /*int n*/         SIZE,
-            /*double alpha*/  1.0,
-            /*double *a*/     a,
-            /*int lda*/       SIZE,
-            /*double *b*/     b,
-            /*int ldb*/       SIZE);
-  affiche(SIZE, SIZE, b, SIZE, stdout);
-  printf("_______\n");
-  cblas_dtrsm(/*int *Layout*/ CblasColMajor,
-            /*int side*/      CblasLeft,
-            /*int uplo*/      CblasUpper,
-            /*int transA*/    CblasTrans,
-            /*int diag*/      CblasUnit,
-            /*int m*/         SIZE,
-            /*int n*/         SIZE,
-            /*double alpha*/  1.0,
-            /*double *a*/     a,
-            /*int lda*/       SIZE,
-            /*double *b*/     c,
-            /*int ldb*/       SIZE);
 
-  for (i = 0; i < SIZE*SIZE; i++) {
-    b[i] -= c[i];
-  }
-
-  affiche(SIZE, SIZE, b, SIZE, stdout);
   free(a);
   free(b);
   free(c);
