@@ -1,7 +1,12 @@
 CC = gcc
 
-PROGRAMS = $(notdir $(wildcard src/tst/*.c))
-BIN = $(addprefix bin/,$(PROGRAMS:.c=.exe))
+TESTS_SRC = $(notdir $(wildcard src/tst/*.c))
+BIN_TESTS = $(addprefix bin/tst/,$(TESTS_SRC:.c=.exe))
+
+PERF_SRC = $(notdir $(wildcard src/perf/*.c))
+BIN_PERF = $(addprefix bin/perf/,$(PERF_SRC:.c=.exe))
+
+BIN = $(BIN_TESTS) $(BIN_PERF)
 
 LIB_SRC = $(wildcard src/mylib/*.c)
 LIB_OBJ = $(addprefix obj/mylib/,$(notdir $(LIB_SRC:.c=.o)))
@@ -21,10 +26,10 @@ start:
 
 .PHONY: install uninstall
 install:
-	mkdir -p bin $(LIB_DIR) obj obj/mylib obj/utilities pdf data
+	mkdir -p bin bin/tst bin/perf $(LIB_DIR) obj obj/mylib obj/utilities obj/tst obj/perf pdf data
 
 uninstall:
-	rm -rf bin $(LIB_DIR) obj obj/mylib obj/utilities pdf data
+	rm -rf bin bin/tst bin/perf $(LIB_DIR) obj obj/mylib obj/utilities obj/tst obj/perf pdf data
 
 CFLAGS = -O3 -Wall -Wextra
 CFLAGS += -I./headers
@@ -45,25 +50,41 @@ obj/mylib/%.o: src/mylib/%.c
 obj/utilities/%.o: src/utilities/%.c
 	@$(CC) -o $@ $(CFLAGS) -c $<
 
-obj/%.o: src/tst/%.c
+obj/tst/%.o: src/tst/%.c
 	@$(CC) -o $@ $(CFLAGS) -c $<
 
-bin/%.exe: obj/%.o $(UTILS_OBJ) $(LIB_DIR)/libmyblas.so
+obj/perf/%.o: src/perf/%.c
+	@$(CC) -o $@ $(CFLAGS) -c $<
+
+bin/tst/%.exe: obj/tst/%.o $(UTILS_OBJ) $(LIB_DIR)/libmyblas.so
 	@$(CC) -o $@ $(CFLAGS) $^ $(LDLIBS)
+
+bin/perf/%.exe: obj/perf/%.o $(UTILS_OBJ) $(LIB_DIR)/libmyblas.so
+	@$(CC) -o $@ $(CFLAGS) $^ $(LDLIBS)
+
 
 $(LIB_DIR)/libmyblas.so: $(LIB_OBJ)
 	@$(CC) $(CFLAGS) -shared -o $(LIB_DIR)/libmyblas.so $^ $(LDLIBS)
 
-.PHONY: lib check graph
+
+### COMMANDS ###
+
+.PHONY: lib test check graph
 lib: $(LIB_DIR)/libmyblas.so
 
-check:
-	OLD_LIB_DIR=$(LIB_DIR)
-	LIB_DIR=check/build
-	$(MAKE) lib
-	LIB_DIR=$(OLD_LIB_DIR)
+test: $(BIN_TESTS)
+	for test in $(BIN_TESTS); do \
+		./$$test ; \
+	done
 
-graph: default
+check: #TODO
+	@echo 'Work in progress'
+	#OLD_LIB_DIR=$(LIB_DIR)
+	#LIB_DIR=check/build
+	#$(MAKE) lib
+	#LIB_DIR=$(OLD_LIB_DIR)
+
+graph: lib $(BIN_PERF)
 	bash graph/make_data.sh
 
 .PHONY: clean clean_deps clean_graph clean_all
@@ -71,7 +92,7 @@ graph: default
 clean_all: clean clean_graph clean_lib
 
 clean:
-	rm -f bin/* obj/*.o
+	rm -f bin/*.exe bin/tst/*.exe bin/perf/*.exe obj/*.o obj/mylib/*.o obj/utilities/*.o
 
 clean_lib:
 	rm -f $(LIB_DIR)/*.so
