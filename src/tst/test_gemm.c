@@ -7,6 +7,8 @@
 #include "perf.h"
 #include "my_lib.h"
 
+#define BLOC_SIZE 130
+
 int main(void){
 
   double *a, *b, *c, *d;
@@ -34,18 +36,27 @@ int main(void){
   for(ta = 0; ta < 2; ta++){
     for(tb = 0; tb < 2; tb++){
       printf("A : %s, B : %s\n", tr_name[ta], tr_name[tb]);
+
       /* random a b and c = d */
       LAPACKE_dlarnv_work(IONE, ISEED, lda*k, a);
       LAPACKE_dlarnv_work(IONE, ISEED, ldb*n, b);
       LAPACKE_dlarnv_work(IONE, ISEED, ldc*n, c);
-      for (i = 0; i < ldc*n; i++) d[i] = c[i];
 
-      /* affiche(m, n, d, ldc, stdout); */
+      /* Tile conversion */
+      double **a_Tile = lapack2tile( lda, k, BLOC_SIZE, a, lda );
+      double **b_Tile = lapack2tile( ldb, n, BLOC_SIZE, b, ldb );
+      double **c_Tile = lapack2tile( ldc, n, BLOC_SIZE, c, ldc );
+
+      for (i = 0; i < ldc*n; i++) d[i] = c[i];
       /* c = a*b */
-      my_dgemm_omp(CblasColMajor, tr[ta], tr[tb], m, n, k, alpha, a, lda, b, ldb, beta, c, ldc);
+      //my_dgemm_omp(CblasColMajor, tr[ta], tr[tb], m, n, k, alpha, a, lda, b, ldb, beta, c, ldc);
+      my_dgemm_Tile(CblasColMajor, tr[ta], tr[tb], m, n, k, alpha, a_Tile, lda, b_Tile, ldb, beta, c_Tile, ldc);
+
       /* d = a*b */
       cblas_dgemm(CblasColMajor, tr[ta], tr[tb], m, n, k, alpha, a, lda, b, ldb, beta, d, ldc);
+
       /* print d-c */
+      tile2lapack( m, n, BLOC_SIZE, c_Tile, c, ldc );
       for (i = 0; i < ldc*n; i++) {
         d[i] -= c[i];
       }
