@@ -64,19 +64,19 @@ int test_version(char *id, long long int step, double (*ddot)(const long long in
 int main() {
   printf("version, n, step, Mflops, us\n");
 
-  double my_one = test_version("my", 1, &my_ddot);
+  double my_one = test_version("myblas", 1, &my_ddot);
   double mkl_one = test_version("mkl", 1, &cblas_ddot);
-  double my_two = test_version("my", 2, &my_ddot);
-  double mkl_two = test_version("mkl", 2, &cblas_ddot);
+  double my_two = test_version("myblas_scatter", 2, &my_ddot);
+  double mkl_two = test_version("mkl_scatter", 2, &cblas_ddot);
 
 
 
-  if (my_one == mkl_one && my_two == mkl_two) {
+  /*if (my_one == mkl_one && my_two == mkl_two) {
     printf("\nOK\n");
   }
   else {
     printf("\nFailed\n");
-  }
+  }*/
 
   return 0;
 }

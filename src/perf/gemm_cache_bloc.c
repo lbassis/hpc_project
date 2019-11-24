@@ -34,7 +34,7 @@ int main() {
 
   double performance;
   perf_t start,stop;
-  printf("n, Mflops, ms\n");
+  printf("n, Mflops, us\n");
 
   // Performance d'une addition scalaire
   int l = 0, n = 0;

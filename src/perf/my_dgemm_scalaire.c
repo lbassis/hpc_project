@@ -6,7 +6,7 @@
 #include <mkl.h>
 
 #ifndef NB_LOOP
-#define NB_LOOP 100
+#define NB_LOOP 300
 #endif
 
 #ifndef MIN_SIZE
@@ -19,7 +19,7 @@
 
 void test_version(char *id, void (*gemm)(CBLAS_LAYOUT, CBLAS_TRANSPOSE, CBLAS_TRANSPOSE, const int, const int, const int, const double, const double*, const int, const double*, const int, const double, double*, const int)){
 
-  (void) id;
+  //(void) id;
   long long int   ISEED[4] = {0,0,0,1};   /* initial seed for zlarnv() */
   long nb_loop = NB_LOOP;
 
@@ -36,7 +36,7 @@ void test_version(char *id, void (*gemm)(CBLAS_LAYOUT, CBLAS_TRANSPOSE, CBLAS_TR
   LAPACKE_dlarnv_work(1, ISEED, MAX_SIZE*MAX_SIZE, b);
   LAPACKE_dlarnv_work(1, ISEED, MAX_SIZE*MAX_SIZE, c);
 
-  for(n = MIN_SIZE; n <= MAX_SIZE; n *= 2){
+  for(n = MIN_SIZE; n <= MAX_SIZE; n += n / 4){
     perf(&start);
 
     for(l = 0; l < nb_loop; l++){
@@ -45,10 +45,10 @@ void test_version(char *id, void (*gemm)(CBLAS_LAYOUT, CBLAS_TRANSPOSE, CBLAS_TR
     perf(&stop);
     perf_diff(&start, &stop);
     performance = perf_mflops(&stop, 2 * n * n * n * nb_loop);
-    printf("%d, %lf, ", n, performance);
+    printf("%s, %d, %lf, ", id, n, performance);
 
     perf_print_time(&stop, nb_loop);
-
+    printf("\n");
 
 
   }
@@ -59,7 +59,7 @@ void test_version(char *id, void (*gemm)(CBLAS_LAYOUT, CBLAS_TRANSPOSE, CBLAS_TR
 }
 
 int main() {
-  printf("n, Mflops_mkl, ms_mkl, Mflops_ikj, ms_ikj, Mflops_kij, ms_kij, Mflops_ijk, ms_ijk, Mflops_jik, ms_jik\n");
+  printf("version, n, Mflops, us\n");
   //test_version("mkl", &cblas_dgemm);
   test_version("ikj", &my_dgemm_scalaire);
   test_version("kij", &my_dgemm_scalaire_kij);

@@ -76,7 +76,8 @@ graph: lib $(BIN_PERF)
 	@for perf in $(basename $(notdir $(BIN_PERF))); do \
 		echo $$perf ; \
 		./bin/perf/$$perf.exe > data/$$perf.data; \
-		Rscript graph/gen_graph.R data/$$perf.data "" n Mflops/s pdf/$$perf.pdf ; \
+		Rscript graph/gen_graph.R data/$$perf.data "" n Mflops pdf/$$perf\_flop.pdf ; \
+		Rscript graph/gen_graph.R data/$$perf.data "" n us pdf/$$perf\_time.pdf ; \
 	done
 
 test:

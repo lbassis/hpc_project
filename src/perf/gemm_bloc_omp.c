@@ -30,7 +30,7 @@ int main(void) {
 
   double performance;
   perf_t start,stop;
-  printf("n, Mflops, us, Mflops_mkl, us_mkl\n");
+  printf("version, n, Mflops, us\n");
 
   // Performance d'une addition scalaire
   int l = 0, n = 0;
@@ -56,9 +56,29 @@ int main(void) {
     perf(&stop);
     perf_diff(&start, &stop);
     performance = perf_mflops(&stop, 2 * MAX_SIZE * MAX_SIZE * MAX_SIZE * NB_LOOP);
-    printf("%d, %lf, ", n, performance);
+    printf("myblas_omp, %d, %lf, ", n, performance);
 
     perf_print_time(&stop, nb_loop);
+    printf("\n");
+
+    perf(&start);
+    for(l = 0; l < nb_loop; l++){
+      my_dgemm(CblasColMajor,
+                  CblasNoTrans,
+                  CblasNoTrans,
+                  /* m */ n,
+                  /* n */ n,
+                  /* k */ n,
+                  /* alpha */ 2.5, a, MAX_SIZE, b, MAX_SIZE, /* beta */ 1.3, c, MAX_SIZE);
+    }
+    perf(&stop);
+    perf_diff(&start, &stop);
+    performance = perf_mflops(&stop, 2 * MAX_SIZE * MAX_SIZE * MAX_SIZE * NB_LOOP);
+    printf("myblas, %d, %lf, ", n, performance);
+
+    perf_print_time(&stop, nb_loop);
+    printf("\n");
+
 
     perf(&start);
     for(l = 0; l < nb_loop; l++){
@@ -73,7 +93,7 @@ int main(void) {
     perf(&stop);
     perf_diff(&start, &stop);
     performance = perf_mflops(&stop, 2 * MAX_SIZE * MAX_SIZE * MAX_SIZE * NB_LOOP);
-    printf("%d, %lf, ", n, performance);
+    printf("mkl, %d, %lf, ", n, performance);
 
     perf_print_time(&stop, nb_loop);
 

@@ -8,7 +8,7 @@
 
 
 #ifndef NB_LOOP
-#define NB_LOOP 20
+#define NB_LOOP 300
 #endif
 
 #ifndef MIN_SIZE
@@ -16,11 +16,11 @@
 #endif
 
 #ifndef MAX_SIZE
-#define MAX_SIZE 250
+#define MAX_SIZE 200
 #endif
 
 
-int main(void) {
+int main() {
 
   long nb_loop = NB_LOOP;
 
@@ -36,45 +36,48 @@ int main(void) {
   double *a = alloc_mat(MAX_SIZE, MAX_SIZE);
   double *b = alloc_mat(MAX_SIZE, MAX_SIZE);
   double *c = alloc_mat(MAX_SIZE, MAX_SIZE);
+  double *d = alloc_mat(MAX_SIZE, MAX_SIZE);
 
   LAPACKE_dlarnv_work(IONE, ISEED, MAX_SIZE*MAX_SIZE, a);
   LAPACKE_dlarnv_work(IONE, ISEED, MAX_SIZE*MAX_SIZE, b);
   LAPACKE_dlarnv_work(IONE, ISEED, MAX_SIZE*MAX_SIZE, c);
+  LAPACKE_dlarnv_work(IONE, ISEED, MAX_SIZE*MAX_SIZE, d);
 
-  //double result = 0;
+  //long long ipiv[MAX_SIZE] = {};
   for(n = MIN_SIZE; n < MAX_SIZE; n+=2){
     perf(&start);
     for(l = 0; l < nb_loop; l++){
-      my_dgemm_seq(CblasColMajor,
-                  CblasNoTrans,
-                  CblasNoTrans,
-                  /* m */ n,
-                  /* n */ n,
-                  /* k */ n,
-                  /* alpha */ 2.5, a, n, b, n, /* beta */ 1.3, c, n);
+      my_dtrsm(LAPACK_COL_MAJOR, CblasLeft, CblasLower, CblasNoTrans, CblasUnit, n, n, 1.3, a, n, b, n);
     }
     perf(&stop);
     perf_diff(&start, &stop);
-    performance = perf_mflops(&stop, 2 * n * n * n * NB_LOOP);
-    printf("myblas, %d, %lf, ", n, performance);
+    performance = perf_mflops(&stop, (2 * n / 3) * n * n * NB_LOOP);
+    printf("%s, %d, %lf, ", "myblas", n, performance);
 
     perf_print_time(&stop, nb_loop);
     printf("\n");
 
     perf(&start);
     for(l = 0; l < nb_loop; l++){
-      cblas_dgemm(CblasColMajor,
-                  CblasNoTrans,
-                  CblasNoTrans,
-                  /* m */ n,
-                  /* n */ n,
-                  /* k */ n,
-                  /* alpha */ 2.5, a, n, b, n, /* beta */ 1.3, c, n);
+      my_dtrsm_omp(LAPACK_COL_MAJOR, CblasLeft, CblasLower, CblasNoTrans, CblasUnit, n, n, 1.3, a, n, d, n);
     }
     perf(&stop);
     perf_diff(&start, &stop);
-    performance = perf_mflops(&stop, 2 * n * n * n * NB_LOOP);
-    printf("mkl, %d, %lf, ", n, performance);
+    performance = perf_mflops(&stop, (2 * n / 3) * n * n * NB_LOOP);
+    printf("%s, %d, %lf, ", "myblas_omp", n, performance);
+
+    perf_print_time(&stop, nb_loop);
+    printf("\n");
+
+
+    perf(&start);
+    for(l = 0; l < nb_loop; l++){
+      cblas_dtrsm(LAPACK_COL_MAJOR, CblasLeft, CblasLower, CblasNoTrans, CblasUnit, n, n, 1.3, a, n, c, n);
+    }
+    perf(&stop);
+    perf_diff(&start, &stop);
+    performance = perf_mflops(&stop, (2 * n / 3) * n * n * NB_LOOP);
+    printf("%s, %d, %lf, ", "mkl", n, performance);
 
     perf_print_time(&stop, nb_loop);
     printf("\n");
@@ -83,5 +86,6 @@ int main(void) {
   free(a);
   free(b);
   free(c);
+  free(d);
   return 0;
 }

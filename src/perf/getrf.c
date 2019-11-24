@@ -29,17 +29,15 @@ int main() {
 
   double performance;
   perf_t start,stop;
-  printf("n, Mflops, ms, Mflops_mkl, ms_mkl\n");
+  printf("version, n, Mflops, us\n");
 
   // Performance d'une addition scalaire
   int l = 0, n = 0;
   double *a = alloc_mat(MAX_SIZE, MAX_SIZE);
   double *b = alloc_mat(MAX_SIZE, MAX_SIZE);
-  double *c = alloc_mat(MAX_SIZE, MAX_SIZE);
 
   LAPACKE_dlarnv_work(IONE, ISEED, MAX_SIZE*MAX_SIZE, a);
-  LAPACKE_dlarnv_work(IONE, ISEED, MAX_SIZE*MAX_SIZE, b);
-  LAPACKE_dlarnv_work(IONE, ISEED, MAX_SIZE*MAX_SIZE, c);
+  LAPACKE_dlarnv_work(IONE, ISEED, MAX_SIZE*MAX_SIZE, a);
 
   long long ipiv[MAX_SIZE] = {};
   for(n = MIN_SIZE; n < MAX_SIZE; n+=2){
@@ -50,10 +48,56 @@ int main() {
     perf(&stop);
     perf_diff(&start, &stop);
     performance = perf_mflops(&stop, (2 * n / 3) * n * n * NB_LOOP);
-    printf("%d, %lf, ", n, performance);
+    printf("%s, %d, %lf, ", "myblas", n, performance);
 
     perf_print_time(&stop, nb_loop);
+    printf("\n");
+    for(l = 0; l < n * n; l++) a[l] = b[l];
 
+
+    perf(&start);
+    for(l = 0; l < nb_loop; l++){
+      my_dgetrf_omp_gemm(LAPACK_COL_MAJOR, n, n, a, n, NULL);
+    }
+    perf(&stop);
+    perf_diff(&start, &stop);
+    performance = perf_mflops(&stop, (2 * n / 3) * n * n * NB_LOOP);
+    printf("%s, %d, %lf, ", "myblas_omp_gemm", n, performance);
+
+    perf_print_time(&stop, nb_loop);
+    printf("\n");
+    for(l = 0; l < n * n; l++) a[l] = b[l];
+
+
+    perf(&start);
+    for(l = 0; l < nb_loop; l++){
+      my_dgetrf_omp_trsm_gemm(LAPACK_COL_MAJOR, n, n, a, n, NULL);
+    }
+    perf(&stop);
+    perf_diff(&start, &stop);
+    performance = perf_mflops(&stop, (2 * n / 3) * n * n * NB_LOOP);
+    printf("%s, %d, %lf, ", "myblas_omp_trsm_gemm", n, performance);
+
+    perf_print_time(&stop, nb_loop);
+    printf("\n");
+    for(l = 0; l < n * n; l++) a[l] = b[l];
+
+/*
+    perf(&start);
+    for(l = 0; l < nb_loop; l++){
+      my_dgetrf_Tile(LAPACK_COL_MAJOR, n, n, a, n, NULL);
+    }
+    perf(&stop);
+    perf_diff(&start, &stop);
+    performance = perf_mflops(&stop, (2 * n / 3) * n * n * NB_LOOP);
+    printf("%s, %d, %lf, ", "myblas_tile", n, performance);
+
+    perf_print_time(&stop, nb_loop);
+    printf("\n");
+    for(l = 0; l < n * n; l++) a[l] = b[l];
+*/
+
+/*
     perf(&start);
     for(l = 0; l < nb_loop; l++){
       LAPACKE_dgetrf(LAPACK_COL_MAJOR, n, n, b, n, ipiv);
@@ -61,14 +105,15 @@ int main() {
     perf(&stop);
     perf_diff(&start, &stop);
     performance = perf_mflops(&stop, (2 * n / 3) * n * n * NB_LOOP);
-    printf("%d, %lf, ", n, performance);
+    printf("%s, %d, %lf, ", "mkl", n, performance);
+
+    for(l = 0; l < n * n; l++) a[l] = b[l];
 
     perf_print_time(&stop, nb_loop);
     printf("\n");
+    */
   }
-
   free(a);
   free(b);
-  free(c);
   return 0;
 }
