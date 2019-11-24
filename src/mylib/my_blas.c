@@ -130,7 +130,7 @@ void my_dger(CBLAS_LAYOUT layout,
   }
 }
 
-void my_dtrsm(CBLAS_LAYOUT layout,
+void my_dtrsm2(CBLAS_LAYOUT layout,
               CBLAS_SIDE side,
               CBLAS_UPLO uplo,
               CBLAS_TRANSPOSE transA,
@@ -313,7 +313,7 @@ void my_dtrsm(CBLAS_LAYOUT layout,
     }
 }
 
-void my_dtrsm2(CBLAS_LAYOUT layout,
+void my_dtrsm(CBLAS_LAYOUT layout,
               CBLAS_SIDE side,
               CBLAS_UPLO uplo,
               CBLAS_TRANSPOSE transA,
@@ -392,7 +392,7 @@ void my_dtrsm2(CBLAS_LAYOUT layout,
           }
          }
        } else {
-         if (upper) {
+         if (upper) {//?
             //#pragma omp parallel for private(i, k)
             for (j = 0; j < n; j++) {
               double* b_start = b + j * ldb;
@@ -400,12 +400,12 @@ void my_dtrsm2(CBLAS_LAYOUT layout,
 		              //if(alpha != 1.){
                       b_start[i] *= alpha;
 		              //}
+                  if (unknown_diag) {
+                    b_start[i] /= a[i + i * lda];
+                  }
                   const double* ai = a + i *lda;
                   for (k = 0; k < i; k++) { // left !trans upper
                       b_start[i] -= ai[k] * b_start[k];
-                  }
-                  if (unknown_diag) {
-                    b_start[i] /= a[i + i * lda];
                   }
                 }
              }

@@ -6,7 +6,7 @@
 #include "my_lib.h"
 
 #ifndef NB_LOOP
-#define NB_LOOP 100000000
+#define NB_LOOP 100
 #endif
 
 #ifndef MIN_SIZE

@@ -6,7 +6,7 @@
 #include <mkl.h>
 
 #ifndef NB_LOOP
-#define NB_LOOP 10000
+#define NB_LOOP 100
 #endif
 
 #ifndef MIN_SIZE
@@ -14,7 +14,7 @@
 #endif
 
 #ifndef MAX_SIZE
-#define MAX_SIZE 1024
+#define MAX_SIZE 300
 #endif
 
 void test_version(char *id, void (*gemm)(CBLAS_LAYOUT, CBLAS_TRANSPOSE, CBLAS_TRANSPOSE, const int, const int, const int, const double, const double*, const int, const double*, const int, const double, double*, const int)){

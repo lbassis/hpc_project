@@ -54,4 +54,17 @@ void my_dtrsm(CBLAS_LAYOUT layout,
               double *b,
               const int ldb);
 
+void my_dtrsm_omp(CBLAS_LAYOUT layout,
+              CBLAS_SIDE side,
+              CBLAS_UPLO uplo,
+              CBLAS_TRANSPOSE transA,
+              CBLAS_DIAG diag,
+              const int m,
+              const int n,
+              const double alpha,
+              const double *a,
+              const int lda,
+              double *b,
+              const int ldb);
+
 #endif

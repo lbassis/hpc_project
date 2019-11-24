@@ -72,20 +72,18 @@ $(LIB_DIR)/libmyblas.so: $(LIB_OBJ)
 .PHONY: lib test check graph
 lib: $(LIB_DIR)/libmyblas.so
 
-test: $(BIN_TESTS)
+graph: lib $(BIN_PERF)
+	@for perf in $(basename $(notdir $(BIN_PERF))); do \
+		echo $$perf ; \
+		./bin/perf/$$perf.exe > data/$$perf.data; \
+		Rscript graph/gen_graph.R data/$$perf.data "" n Mflops/s pdf/$$perf.pdf ; \
+	done
+
+test:
 	for test in $(BIN_TESTS); do \
 		./$$test ; \
 	done
 
-check: #TODO
-	@echo 'Work in progress'
-	#OLD_LIB_DIR=$(LIB_DIR)
-	#LIB_DIR=check/build
-	#$(MAKE) lib
-	#LIB_DIR=$(OLD_LIB_DIR)
-
-graph: lib $(BIN_PERF)
-	bash graph/make_data.sh
 
 .PHONY: clean clean_deps clean_graph clean_all
 
