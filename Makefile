@@ -46,39 +46,39 @@ LDLIBS = -L${MKLROOT}/lib/intel64 -Wl,--no-as-needed -lmkl_intel_ilp64 -lmkl_gnu
 
 
 obj/mylibperf/%.o: src/mylib/%.c
-	@$(CC) -o $@ $(CFLAGS) -c $< -fPIC -DPERF
+	$(CC) -o $@ $(CFLAGS) -c $< -fPIC -DPERF=0
 
 obj/mylib/%.o: src/mylib/%.c
-	@$(CC) -o $@ $(CFLAGS) -c $< -fPIC
+	$(CC) -o $@ $(CFLAGS) -c $< -fPIC
 
 obj/utilities/%.o: src/utilities/%.c
-	@$(CC) -o $@ $(CFLAGS) -c $<
+	$(CC) -o $@ $(CFLAGS) -c $< -fPIC
 
 obj/tst/%.o: src/tst/%.c
-	@$(CC) -o $@ $(CFLAGS) -c $<
+	$(CC) -o $@ $(CFLAGS) -c $<
 
 obj/perf/getrf_split.o: src/getrf_split.c
-	@$(CC) -o $@ $(CFLAGS) $^ $(LDLIBS)
+	$(CC) -o $@ $(CFLAGS) -c $<
 
 obj/perf/%.o: src/perf/%.c
-	@$(CC) -o $@ $(CFLAGS) -c $<
+	$(CC) -o $@ $(CFLAGS) -c $<
 
 bin/tst/%.exe: obj/tst/%.o $(UTILS_OBJ) $(LIB_DIR)/libmyblas.so
-	@$(CC) -o $@ $(CFLAGS) $^ $(LDLIBS)
+	$(CC) -o $@ $(CFLAGS) $^ $(LDLIBS)
 
 
-bin/perf/getrf_split.exe: obj/perf/getrf_split.o $(UTILS_OBJ) $(LIB_DIR)/libmyblasperf.so
-	@$(CC) -o $@ $(CFLAGS) $^ $(LDLIBS)
+bin/perf/getrf_split.exe: obj/perf/getrf_split.o $(LIB_DIR)/libmyblasperf.so
+	$(CC) -o $@ $(CFLAGS) $^ $(LDLIBS)
 
 bin/perf/%.exe: obj/perf/%.o $(UTILS_OBJ) $(LIB_DIR)/libmyblas.so
-	@$(CC) -o $@ $(CFLAGS) $^ $(LDLIBS)
+	$(CC) -o $@ $(CFLAGS) $^ $(LDLIBS)
 
 
 $(LIB_DIR)/libmyblas.so: $(LIB_OBJ)
-	@$(CC) $(CFLAGS) -shared -o $@ $^ $(LDLIBS)
+	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDLIBS)
 
-$(LIB_DIR)/libmyblasperf.so: $(LIB_PERF_OBJ)
-	@$(CC) $(CFLAGS) -shared -o $@ $^ $(LDLIBS)
+$(LIB_DIR)/libmyblasperf.so: $(LIB_PERF_OBJ) obj/utilities/perf.o
+	$(CC) $(CFLAGS) -shared -o $@ $^ $(LDLIBS)
 
 
 ### COMMANDS ###
@@ -105,7 +105,7 @@ test: $(BIN_TESTS)
 clean_all: clean clean_graph clean_lib
 
 clean:
-	rm -f bin/*.exe bin/tst/*.exe bin/perf/*.exe obj/*.o obj/mylib/*.o obj/utilities/*.o
+	rm -f bin/*.exe bin/tst/*.exe bin/perf/*.exe obj/*.o obj/mylib/*.o obj/mylibperf/*.o obj/utilities/*.o
 
 clean_lib:
 	rm -f $(LIB_DIR)/*.so
