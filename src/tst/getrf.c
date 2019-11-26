@@ -11,8 +11,10 @@
 #define SIZE 10
 #endif
 
-#define M 10
-#define N 10
+#define M 140
+#define N 150
+
+#define BLOC_SIZE 130
 
 int main(void){
   double a[M * N] = {};
@@ -23,24 +25,24 @@ int main(void){
   for(i = 0; i < M * N; i++){
     b[i] = a[i];
   }
+  /* Lapack interface */
+  double **a_Tile = lapack2tile( M, N, BLOC_SIZE, a, M );
 
+  //my_dgetrf(LAPACK_COL_MAJOR, M, N, a, M, NULL);
+  my_dgetrf_Tile(LAPACK_COL_MAJOR, M, N, a_Tile, M, NULL);
 
-
-  my_dgetrf(LAPACK_COL_MAJOR, M, N, a, M, NULL);
-  //affiche(SIZE, SIZE, a, SIZE, stdout);
-  //printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
   long long ipiv[M] = {};
   LAPACKE_dgetrf(LAPACK_COL_MAJOR, M, N, b, M, ipiv);
+  
 
-  affiche(M, N, a, M, stdout);
+  tile2lapack( M, N, BLOC_SIZE, a_Tile, a, M );
+
   printf("__\n");
   for(i = 0; i < M * N; i++){
     b[i] -= a[i];
   }
-  affiche(M, N, b, M, stdout);
-  for(i = 0; i < M; i++){
-    printf("%lld ", ipiv[i] - i - 1);
-  }
+
+  printf("||lapacke_getrf - my_getrf_Tile||1 = %lf\n", LAPACKE_dlange(CblasColMajor, 'M', M, N, b, M));
   printf("\n");
   return 0;
 }
