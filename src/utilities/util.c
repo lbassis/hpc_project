@@ -14,7 +14,7 @@ void affiche(unsigned long m, unsigned long n, double *a, unsigned long lda, FIL
   unsigned long i, j;
   for (i = 0; i < n; i++) {
     for (j = 0; j < m; j++) {
-      fprintf(flux, "%f ", a[lda*j + i]);
+      fprintf(flux, "%f ", a[lda*i + j]);
     }
     printf("\n");
   }
@@ -31,13 +31,14 @@ double *alloc_vec(unsigned long n) {
 int init_random(unsigned long m, unsigned long n, double *a, unsigned int seed) {
 
   unsigned long i, j;
+  long long int   ISEED[4] = {0,0,0,seed};   /* initial seed for zlarnv() */
+  LAPACKE_dlarnv_work(1, ISEED, m*n, a);
+
   srand(seed);
   for (i = 0; i < n; i++) {
     for (j = 0; j < m; j++) {
-      a[m*j+i] = (double)rand() / (double)((unsigned)RAND_MAX);
-
       if (i == j) { // si on est dans une diagonale, on s'assure qu'elle est dominante
-	       a[m*j+i] += m;
+	a[m*j+i] += m;
       }
     }
   }
@@ -106,7 +107,7 @@ tile2lapack( int M, int N, int b,
     /* Now, let's copy the tile one by one, in column major order */
     for( n=0; n<NT; n++) {
         for( m=0; m<MT; m++) {
-            double *tile = Atile[ MT * n + m ];
+	    const double *tile = Atile[ MT * n + m ];
             int mm = m == (MT-1) ? M - m * b : b;
             int nn = n == (NT-1) ? N - n * b : b;
 

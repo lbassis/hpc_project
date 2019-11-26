@@ -7,9 +7,6 @@
 #include "perf.h"
 #include "my_lib.h"
 
-#ifndef SIZE
-#define SIZE 10
-#endif
 
 #define M 140
 #define N 150
@@ -21,7 +18,7 @@ int main(void){
   int IONE = 1;
   long long int   ISEED[4] = {0,0,0,1};   /* initial seed for zlarnv() */
 
-  LAPACKE_dlarnv_work(IONE, ISEED, M * N, a);
+  LAPACKE_dlarnv_work(M, N, a, 1);
 
   int i = 0;
   for(i = 0; i < M * N; i++) b[i] = a[i];
@@ -30,6 +27,7 @@ int main(void){
   //printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
   long long ipiv[M] = {};
   LAPACKE_dgetrf(LAPACK_COL_MAJOR, M, N, b, M, ipiv);
+
 
   //affiche(M, N, a, M, stdout);
   //printf("__\n");

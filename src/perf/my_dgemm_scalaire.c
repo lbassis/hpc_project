@@ -66,4 +66,6 @@ int main() {
   test_version("ijk", &my_dgemm_scalaire_ijk);
   test_version("jik", &my_dgemm_scalaire_jik);
   printf("\n");
+
+  return 0;
 }
