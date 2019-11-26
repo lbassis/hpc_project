@@ -18,12 +18,11 @@ int main(void){
   int m = 150;
   int n = 150;
   int lda = m;
+  long long int* ipiv = (long long int*)malloc(m * sizeof(long long int));
 
   a = alloc_mat(lda, n);
   b = alloc_mat(lda, n);
-  long long int* ipiv = (long long int*)malloc(m * sizeof(long long int));
-
-  LAPACKE_dlarnv_work(IONE, ISEED, lda*n, a);
+  init_random(m, n, a, 1);
 
   for (i = 0; i < lda*n; i++) b[i] = a[i];
 
