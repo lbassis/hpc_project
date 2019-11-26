@@ -10,7 +10,7 @@
 #define BLOC_SIZE 130
 
 int main(void){
-
+  printf("%s: \n", __FILE__);
   double *a, *b, *c, *d;
   int i;
   int IONE = 1;
@@ -62,7 +62,6 @@ int main(void){
       }
       printf("||cblas_gemm - my_gemm||1 = %lf\n", LAPACKE_dlange(CblasColMajor, 'M', m, n, d, ldc));
       //affiche(m, n, d, ldc, stdout);
-      printf("_____\n");
     }
   }
 

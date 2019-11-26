@@ -259,7 +259,7 @@ void my_dgemm_seq_omp(CBLAS_LAYOUT layout,
 
   if (!transB) {
     if(!transA){
-#pragma omp parallel for collapse(2) private(tmp, j)
+#pragma omp parallel for collapse(2) private(tmp, j, i, l)
       for (i = 0; i < m; i++) {
 	for (l = 0; l < n; l++) {
 	  tmp = 0;
@@ -270,7 +270,7 @@ void my_dgemm_seq_omp(CBLAS_LAYOUT layout,
 	}
       }
     }else { // transA && !transB
-#pragma omp parallel for collapse(2) private(tmp, j)
+#pragma omp parallel for collapse(2) private(tmp, j, i, l)
       for (i = 0; i < m; i++) {
 	for (l = 0; l < n; l++) {
 	  tmp = 0;
@@ -283,7 +283,7 @@ void my_dgemm_seq_omp(CBLAS_LAYOUT layout,
     }
   }else{ // transB
     if(!transA){
-#pragma omp parallel for collapse(2) private(tmp, j)
+#pragma omp parallel for collapse(2) private(tmp, j, i, l)
       for (i = 0; i < m; i++) { //!transA && transB
 	for (l = 0; l < n; l++) {
 	  tmp = 0;
@@ -294,7 +294,7 @@ void my_dgemm_seq_omp(CBLAS_LAYOUT layout,
 	}
       }
     }else {
-#pragma omp parallel for collapse(2) private(tmp, j)
+#pragma omp parallel for collapse(2) private(tmp, j, i, l)
       for (i = 0; i < m; i++) { //transA && transB
 	for (l = 0; l < n; l++) {
 	  tmp = 0;
@@ -556,7 +556,7 @@ void my_dgemm_omp(CBLAS_LAYOUT layout,
   int start_c;
   double current_beta;
 
-#pragma omp parallel for collapse(2) private(current_block_m, current_block_n, start_a, start_b, start_c, current_beta, kk)
+#pragma omp parallel for collapse(2) private(current_block_m, current_block_n, start_a, start_b, start_c, current_beta, kk, i, j)
   for (i = 0; i < nb_bloc_m; i++) { // lignes de A
     for (j = 0; j < nb_bloc_n; j++) { // colonnes de B
       current_beta = beta;

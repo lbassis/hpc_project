@@ -9,6 +9,7 @@
 
 
 int main(void){
+  printf("%s: \n", __FILE__);
 
   double *a, *b;
   int i;

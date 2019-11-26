@@ -8,6 +8,7 @@
 #include "my_lib.h"
 
 int main(void){
+  printf("%s: \n", __FILE__);
 
   double *a, *b, *c;
   int i;
