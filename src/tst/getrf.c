@@ -29,6 +29,7 @@ int main(void){
   LAPACKE_dgetrf(LAPACK_COL_MAJOR, M, N, b, M, ipiv);
 
 
+
   //affiche(M, N, a, M, stdout);
   //printf("__\n");
   for(i = 0; i < M * N; i++) b[i] -= a[i];
