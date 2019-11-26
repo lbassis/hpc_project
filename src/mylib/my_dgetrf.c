@@ -341,4 +341,5 @@ void my_dgetrf_Tile(CBLAS_LAYOUT layout,
       }
     }
   }
+  (void)lda;
 }

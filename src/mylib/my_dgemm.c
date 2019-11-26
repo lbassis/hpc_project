@@ -459,6 +459,10 @@ void my_dgemm_Tile(CBLAS_LAYOUT layout,
       current_beta = beta;
     }
   }
+
+  (void)lda;
+  (void)ldb;
+  (void)ldc;
 }
 
 void my_dgemm_bloc(CBLAS_LAYOUT layout,
