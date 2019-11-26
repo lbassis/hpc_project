@@ -12,6 +12,7 @@
 
 #ifndef BLOC_SIZE
 #define BLOC_SIZE 130
+
 #endif
 
 
@@ -39,7 +40,7 @@ void my_dgetrf(CBLAS_LAYOUT layout,
     bloc_dgetf2 = a + k * BLOC_SIZE * (lda+1);
 
     my_dgetf2(CblasColMajor,
-						 (k < nb_bloc_m - 1) ? BLOC_SIZE : m - k * BLOC_SIZE,
+	      (k < nb_bloc_m - 1) ? BLOC_SIZE : m - k * BLOC_SIZE,
               (k < nb_bloc_n - 1) ? BLOC_SIZE : n - k * BLOC_SIZE,
               bloc_dgetf2,
               lda,
@@ -54,10 +55,10 @@ void my_dgetrf(CBLAS_LAYOUT layout,
                CblasNoTrans,
                CblasNonUnit,
                /* m */ (i < nb_bloc_m - 1) ? BLOC_SIZE : m - i * BLOC_SIZE,
-               /* n */ BLOC_SIZE,
+               /* n */ (k < nb_bloc_n - 1) ? BLOC_SIZE : n - k * BLOC_SIZE,
                /* alpha */ 1,
                /* L\U */ bloc_dgetf2,
-							 lda,
+	       lda,
                /* A[i][k] */ a + BLOC_SIZE * (i + k * lda),
                lda);
     }
@@ -68,7 +69,7 @@ void my_dgetrf(CBLAS_LAYOUT layout,
                 /*int uplo*/      CblasLower,
                 /*int transA*/    CblasNoTrans,
                 /*int diag*/      CblasUnit,
-                /*int m*/         BLOC_SIZE,
+                /*int m*/         (k < nb_bloc_m - 1) ? BLOC_SIZE : m - k * BLOC_SIZE,
                 /*int n*/         (j < nb_bloc_n - 1) ? BLOC_SIZE : n - j * BLOC_SIZE,
                 /*double alpha*/  1,
                 /*double *a*/     bloc_dgetf2,

@@ -7,12 +7,9 @@
 #include "perf.h"
 #include "my_lib.h"
 
-#ifndef SIZE
-#define SIZE 10
-#endif
 
-#define M 140
-#define N 150
+#define M 5
+#define N 7
 
 #define BLOC_SIZE 130
 
@@ -25,6 +22,11 @@ int main(void){
   for(i = 0; i < M * N; i++){
     b[i] = a[i];
   }
+
+  printf("a:\n");
+  affiche(M, N, a, M, stdout);
+  printf("b:\n");
+  affiche(M, N, b, M, stdout);
   /* Lapack interface */
   double **a_Tile = lapack2tile( M, N, BLOC_SIZE, a, M );
 
@@ -37,12 +39,21 @@ int main(void){
 
   tile2lapack( M, N, BLOC_SIZE, (const double**)a_Tile, a, M );
 
+  printf("a:\n");
+  affiche(M, N, a, M, stdout);
+  printf("b:\n");
+  affiche(M, N, b, M, stdout);
+
   printf("__\n");
   for(i = 0; i < M * N; i++){
     b[i] -= a[i];
   }
 
-  printf("||lapacke_getrf - my_getrf_Tile||1 = %lf\n", LAPACKE_dlange(CblasColMajor, 'M', M, N, b, M));
+  for (i = 0; i < M; i++) {
+    printf("%ld ", ipiv[i]);
+  }
+
+  printf("\n||lapacke_getrf - my_getrf_Tile||1 = %lf\n", LAPACKE_dlange(CblasColMajor, 'M', M, N, b, M));
   printf("\n");
   return 0;
 }
