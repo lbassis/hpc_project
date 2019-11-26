@@ -16,8 +16,8 @@ int main(void){
   int IONE = 1;
   long long int   ISEED[4] = {0,0,0,1};   /* initial seed for zlarnv() */
 
-  double alpha = 1.;
-  double beta = 1.3;
+  const double alpha = 1.;
+  const double beta = 1.3;
   int m =   150;
   int n =   150;
   int k =   150;
@@ -50,13 +50,13 @@ int main(void){
       for (i = 0; i < ldc*n; i++) d[i] = c[i];
       /* c = a*b */
       //my_dgemm_omp(CblasColMajor, tr[ta], tr[tb], m, n, k, alpha, a, lda, b, ldb, beta, c, ldc);
-      my_dgemm_Tile(CblasColMajor, tr[ta], tr[tb], m, n, k, alpha, a_Tile, lda, b_Tile, ldb, beta, c_Tile, ldc);
+      my_dgemm_Tile(CblasColMajor, tr[ta], tr[tb], m, n, k, alpha, (const double**)a_Tile, lda, (const double**)b_Tile, ldb, beta, c_Tile, ldc);
 
       /* d = a*b */
       cblas_dgemm(CblasColMajor, tr[ta], tr[tb], m, n, k, alpha, a, lda, b, ldb, beta, d, ldc);
 
       /* print d-c */
-      tile2lapack( m, n, BLOC_SIZE, c_Tile, c, ldc );
+      tile2lapack( m, n, BLOC_SIZE, (const double**)c_Tile, c, ldc );
       for (i = 0; i < ldc*n; i++) {
         d[i] -= c[i];
       }

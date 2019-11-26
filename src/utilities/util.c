@@ -106,7 +106,7 @@ tile2lapack( int M, int N, int b,
     /* Now, let's copy the tile one by one, in column major order */
     for( n=0; n<NT; n++) {
         for( m=0; m<MT; m++) {
-            double *tile = Atile[ MT * n + m ];
+	    const double *tile = Atile[ MT * n + m ];
             int mm = m == (MT-1) ? M - m * b : b;
             int nn = n == (NT-1) ? N - n * b : b;
 

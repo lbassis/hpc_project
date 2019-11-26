@@ -35,7 +35,7 @@ int main(void){
   LAPACKE_dgetrf(LAPACK_COL_MAJOR, M, N, b, M, ipiv);
   
 
-  tile2lapack( M, N, BLOC_SIZE, a_Tile, a, M );
+  tile2lapack( M, N, BLOC_SIZE, (const double**)a_Tile, a, M );
 
   printf("__\n");
   for(i = 0; i < M * N; i++){

@@ -115,5 +115,7 @@ int main() {
   }
   free(a);
   free(b);
+
+  (void)ipiv;
   return 0;
 }

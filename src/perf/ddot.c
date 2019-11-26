@@ -78,5 +78,9 @@ int main() {
     printf("\nFailed\n");
   }*/
 
+  (void)my_one;
+  (void)mkl_one;
+  (void)my_two;
+  (void)mkl_two;
   return 0;
 }
