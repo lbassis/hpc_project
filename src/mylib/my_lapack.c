@@ -34,7 +34,7 @@ void my_dgetf2(CBLAS_LAYOUT layout,
 void my_dgesv (CBLAS_LAYOUT matrix_layout,
               const int n,
               const int nrhs,
-              const double *a,
+	      double *a,
               const int lda,
               int * ipiv,
               double *b,
@@ -68,4 +68,5 @@ void my_dgesv (CBLAS_LAYOUT matrix_layout,
            /* alpha */ 1.,
            a, lda, b, ldb);
 
+  (void)ipiv;
 }
