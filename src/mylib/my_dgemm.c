@@ -416,12 +416,13 @@ void my_dgemm_Tile(CBLAS_LAYOUT layout,
   int start_a;
   int start_b;
   int start_c;
-  double current_beta = beta;
+  double current_beta;
 
+ #pragma omp parallel for collapse(2) private(current_block_m, current_block_n, start_a, start_b, start_c, current_beta, kk, i, j)
   for (i = 0; i < nb_bloc_m; i++) { // lignes de A
-    current_block_m = (i < nb_bloc_m - 1) ? BLOC_SIZE : m - i * BLOC_SIZE;
-
     for (j = 0; j < nb_bloc_n; j++) { // colonnes de B
+      current_beta = beta;
+      current_block_m = (i < nb_bloc_m - 1) ? BLOC_SIZE : m - i * BLOC_SIZE;
       start_c = (i + j * nb_bloc_m);
       current_block_n = (j < nb_bloc_n - 1) ? BLOC_SIZE : n - j * BLOC_SIZE;
 
@@ -456,7 +457,6 @@ void my_dgemm_Tile(CBLAS_LAYOUT layout,
 		     BLOC_SIZE);
 	current_beta = 1;
       }
-      current_beta = beta;
     }
   }
 
