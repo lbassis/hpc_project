@@ -76,7 +76,20 @@ int main() {
     perf(&stop);
     perf_diff(&start, &stop);
     performance = perf_mflops(&stop, (2 * n / 3) * n * n * NB_LOOP);
-    printf("%s, %d, %lf, ", "myblas_omp_trsm_gemm", n, performance);
+    printf("%s, %d, %lf, ", "myblas_omp_on_bloc", n, performance);
+
+    perf_print_time(&stop, nb_loop);
+    printf("\n");
+    for(l = 0; l < n * n; l++) a[l] = b[l];
+
+    perf(&start);
+    for(l = 0; l < nb_loop; l++){
+      my_dgetrf_omp_trsm_gemm2(LAPACK_COL_MAJOR, n, n, a, n, NULL);
+    }
+    perf(&stop);
+    perf_diff(&start, &stop);
+    performance = perf_mflops(&stop, (2 * n / 3) * n * n * NB_LOOP);
+    printf("%s, %d, %lf, ", "myblas_omp_trsm_gemm2", n, performance);
 
     perf_print_time(&stop, nb_loop);
     printf("\n");

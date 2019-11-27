@@ -88,6 +88,7 @@ lib: $(LIB_DIR)/libmyblas.so $(LIB_DIR)/libmyblasperf.so
 
 graph_from_data:
 	@for perf in $(basename $(notdir $(BIN_PERF))); do \
+		echo $$perf ; \
 		Rscript graph/gen_graph.R data/$$perf.data "" n Mflops pdf/$$perf\_flop.pdf ; \
 		Rscript graph/gen_graph.R data/$$perf.data "" n us pdf/$$perf\_time.pdf ; \
 	done
