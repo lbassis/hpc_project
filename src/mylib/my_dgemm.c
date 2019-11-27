@@ -418,7 +418,7 @@ void my_dgemm_Tile(CBLAS_LAYOUT layout,
   int start_c;
   double current_beta;
 
-  //#pragma omp parallel for collapse(2) private(current_block_m, current_block_n, start_a, start_b, start_c, current_beta, kk, i, j)
+ #pragma omp parallel for collapse(2) private(current_block_m, current_block_n, start_a, start_b, start_c, current_beta, kk, i, j)
   for (i = 0; i < nb_bloc_m; i++) { // lignes de A
     for (j = 0; j < nb_bloc_n; j++) { // colonnes de B
       current_beta = beta;
