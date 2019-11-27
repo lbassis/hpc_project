@@ -38,11 +38,17 @@ void my_dgetrf(CBLAS_LAYOUT layout,
   int min = fmin(nb_bloc_n, nb_bloc_m);
   double* bloc_dgetf2 = NULL;
 
-
+	#ifdef PERF
+  perf_t start, stop, total_getf2, total_dtrsm, total_gemm;
+	#endif
 
   int k = 0;
   for(k = 0; k < min; k++){
     bloc_dgetf2 = a + k * BLOC_SIZE * (lda+1);
+
+		#ifdef PERF
+		perf(&start);
+		#endif
 
     my_dgetf2(CblasColMajor,
 	      (k < nb_bloc_m - 1) ? BLOC_SIZE : m - k * BLOC_SIZE,
@@ -51,8 +57,14 @@ void my_dgetrf(CBLAS_LAYOUT layout,
               lda,
               NULL);
 
-    int i = 0;
+		#ifdef PERF
+		perf(&stop);
+		perf_diff(&start, &stop);
+		perf_add(&stop, &total_getf2);
+		perf(&start);
+		#endif
 
+    int i = 0;
     for(i = k + 1; i < nb_bloc_m; i++){
       my_dtrsm(CblasColMajor,
                CblasRight,
@@ -82,6 +94,14 @@ void my_dgetrf(CBLAS_LAYOUT layout,
                 /*double *b*/     a + BLOC_SIZE * (k + j * lda),
                 /*int ldb*/       lda);
     }
+
+		#ifdef PERF
+		perf(&stop);
+		perf_diff(&start, &stop);
+		perf_add(&stop, &total_dtrsm);
+		perf(&start);
+		#endif
+
     for(i = k + 1; i < nb_bloc_m; i++){
       for(j = k + 1; j < nb_bloc_n; j++){
         my_dgemm (CblasColMajor,
@@ -100,12 +120,30 @@ void my_dgetrf(CBLAS_LAYOUT layout,
                      lda);
       }
     }
+
+		#ifdef PERF
+		perf(&stop);
+		perf_diff(&start, &stop);
+		perf_add(&stop, &total_gemm);
+		#endif
   }
+
+	#ifdef PERF
+	printf("getf2, seq, ");
+	perf_print_time(&total_getf2, 1);
+	printf("\n");
+	printf("trsm, seq, ");
+	perf_print_time(&total_dtrsm, 1);
+	printf("\n");
+	printf("gemm, seq, ");
+	perf_print_time(&total_gemm, 1);
+	printf("\n");
+	#endif
 }
 
 
 
-void my_dgetrf_omp_gemm(CBLAS_LAYOUT layout,
+void my_dgetrf_omp_trsm_gemm(CBLAS_LAYOUT layout,
 							 const int m,
 		           const int n,
 		           double* a,
@@ -121,10 +159,7 @@ void my_dgetrf_omp_gemm(CBLAS_LAYOUT layout,
   double* bloc_dgetf2 = NULL;
 
 	#ifdef PERF
-	double performance;
-  perf_t start,stop;
-	int size[2] = {};
-  printf("version, n, Mflops, us\n");
+  perf_t start, stop, total_getf2, total_dtrsm, total_gemm;
 	#endif
 
   int k = 0;
@@ -132,8 +167,6 @@ void my_dgetrf_omp_gemm(CBLAS_LAYOUT layout,
     bloc_dgetf2 = a + k * BLOC_SIZE * (lda+1);
 
 		#ifdef PERF
-		size[0] = (k < nb_bloc_m - 1) ? BLOC_SIZE : m - k * BLOC_SIZE;
-		size[1] = (k < nb_bloc_n - 1) ? BLOC_SIZE : n - k * BLOC_SIZE;
 		perf(&start);
 		#endif
 
@@ -148,14 +181,12 @@ void my_dgetrf_omp_gemm(CBLAS_LAYOUT layout,
 		#ifdef PERF
 		perf(&stop);
 		perf_diff(&start, &stop);
-		performance = perf_mflops(&stop, (2 * fmin(size[0], size[1]) / 3) * size[0] * size[1]);
-		printf("my_dgetf2, %d, %lf, ", k, performance);
-		perf_print_time(&stop, 1);
-		printf("\n");
+		perf_add(&stop, &total_getf2);
 		perf(&start);
 		#endif
 
 		int i = 0;
+		#pragma omp parallel for private(i)
     for(i = k + 1; i < nb_bloc_m; i++){
       my_dtrsm(CblasColMajor,
                CblasRight,
@@ -172,6 +203,7 @@ void my_dgetrf_omp_gemm(CBLAS_LAYOUT layout,
     }
 
     int j = 0;
+		#pragma omp parallel for private(j)
     for(j = k + 1; j < nb_bloc_n; j++){
       my_dtrsm(/*int *Layout*/ CblasColMajor,
                 /*int side*/      CblasLeft,
@@ -190,17 +222,12 @@ void my_dgetrf_omp_gemm(CBLAS_LAYOUT layout,
 
 		#ifdef PERF
 		perf(&stop);
-		size[0] = (i < nb_bloc_m - 1) ? BLOC_SIZE : m - i * BLOC_SIZE;
-		size[1] = (j < nb_bloc_n - 1) ? BLOC_SIZE : n - j * BLOC_SIZE;
 		perf_diff(&start, &stop);
-		performance = perf_mflops(&stop, 4 * (size[0] * size[0] + size[1] * size[1]) * BLOC_SIZE);
-		printf("my_dtrsm, %d, %lf, ", k, performance);
-		perf_print_time(&stop, 1);
-		printf("\n");
+		perf_add(&stop, &total_dtrsm);
 		perf(&start);
 		#endif
 
-		#pragma omp parallel for collapse(2)
+		#pragma omp parallel for collapse(2) private(i, j)
     for(i = k + 1; i < nb_bloc_m; i++){
       for(j = k + 1; j < nb_bloc_n; j++){
         my_dgemm (CblasColMajor,
@@ -223,17 +250,25 @@ void my_dgetrf_omp_gemm(CBLAS_LAYOUT layout,
 		#ifdef PERF
 		perf(&stop);
 		perf_diff(&start, &stop);
-		performance = perf_mflops(&stop, 2 * (m - k * BLOC_SIZE) * (m - k * BLOC_SIZE) * (m - k * BLOC_SIZE));
-		printf("my_dgemm, %d, %lf, ", k, performance);
-		perf_print_time(&stop, 1);
-		printf("\n");
+		perf_add(&stop, &total_gemm);
 		#endif
   }
+	#ifdef PERF
+	printf("getf2, omp, ");
+	perf_print_time(&total_getf2, 1);
+	printf("\n");
+	printf("trsm, omp, ");
+	perf_print_time(&total_dtrsm, 1);
+	printf("\n");
+	printf("gemm, omp, ");
+	perf_print_time(&total_gemm, 1);
+	printf("\n");
+	#endif
 }
 
 
 
-void my_dgetrf_omp_trsm_gemm(CBLAS_LAYOUT layout,
+void my_dgetrf_omp_gemm(CBLAS_LAYOUT layout,
 							 const int m,
 		           const int n,
 		           double* a,
@@ -262,7 +297,6 @@ void my_dgetrf_omp_trsm_gemm(CBLAS_LAYOUT layout,
               NULL);
 
     int i = 0;
-		#pragma omp parallel for
     for(i = k + 1; i < nb_bloc_m; i++){
       my_dtrsm(CblasColMajor,
                CblasRight,
@@ -278,7 +312,6 @@ void my_dgetrf_omp_trsm_gemm(CBLAS_LAYOUT layout,
                lda);
     }
     int j = 0;
-		#pragma omp parallel for
     for(j = k + 1; j < nb_bloc_n; j++){
       my_dtrsm(/*int *Layout*/ CblasColMajor,
                 /*int side*/      CblasLeft,
@@ -293,7 +326,7 @@ void my_dgetrf_omp_trsm_gemm(CBLAS_LAYOUT layout,
                 /*double *b*/     a + BLOC_SIZE * (k + j * lda),
                 /*int ldb*/       lda);
     }
-		#pragma omp parallel for collapse(2)
+		#pragma omp parallel for collapse(2) private(i, j)
     for(i = k + 1; i < nb_bloc_m; i++){
       for(j = k + 1; j < nb_bloc_n; j++){
         my_dgemm (CblasColMajor,
@@ -342,7 +375,7 @@ void my_dgetrf_Tile(CBLAS_LAYOUT layout,
               bloc_dgetf2,
               BLOC_SIZE,
               NULL);
-    
+
     int i = 0;
 
     for(i = k + 1; i < nb_bloc_m; i++){

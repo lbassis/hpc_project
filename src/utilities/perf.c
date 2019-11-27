@@ -14,6 +14,16 @@ void perf_diff(const perf_t *begin, perf_t *end) {
   }
 }
 
+void perf_add(const perf_t *begin, perf_t *end) {
+  end->tv_sec = end->tv_sec + begin->tv_sec;
+  end->tv_usec = end->tv_usec + begin->tv_usec;
+  if (end->tv_usec > 1000000) {
+    int q = end->tv_usec / 1000000;
+    (end->tv_sec) += q;
+    end->tv_usec = end->tv_usec % 1000000;
+  }
+}
+
 void perf_printh(const perf_t *p) {
   long m = p->tv_sec / 60;
   long s = p->tv_sec - m * 60;

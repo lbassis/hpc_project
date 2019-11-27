@@ -16,4 +16,7 @@ double perf_mflops(const perf_t *p, const long long nb_op);
 
 void perf_print_time(const perf_t *p, long div);
 
+
+void perf_add(const perf_t *begin, perf_t *end);
+
 #endif

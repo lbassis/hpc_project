@@ -67,7 +67,7 @@ bin/tst/%.exe: obj/tst/%.o $(UTILS_OBJ) $(LIB_DIR)/libmyblas.so
 	$(CC) -o $@ $(CFLAGS) $^ $(LDLIBS)
 
 
-bin/perf/getrf_split.exe: obj/perf/getrf_split.o $(LIB_DIR)/libmyblasperf.so
+bin/perf/getrf_split.exe: obj/perf/getrf_split.o obj/utilities/util.o $(LIB_DIR)/libmyblasperf.so
 	$(CC) -o $@ $(CFLAGS) $^ $(LDLIBS)
 
 bin/perf/%.exe: obj/perf/%.o $(UTILS_OBJ) $(LIB_DIR)/libmyblas.so
@@ -85,6 +85,13 @@ $(LIB_DIR)/libmyblasperf.so: $(LIB_PERF_OBJ) obj/utilities/perf.o
 
 .PHONY: lib test check graph
 lib: $(LIB_DIR)/libmyblas.so $(LIB_DIR)/libmyblasperf.so
+
+graph_from_data:
+	@for perf in $(basename $(notdir $(BIN_PERF))); do \
+		Rscript graph/gen_graph.R data/$$perf.data "" n Mflops pdf/$$perf\_flop.pdf ; \
+		Rscript graph/gen_graph.R data/$$perf.data "" n us pdf/$$perf\_time.pdf ; \
+	done
+
 
 graph: lib $(BIN_PERF)
 	@for perf in $(basename $(notdir $(BIN_PERF))); do \

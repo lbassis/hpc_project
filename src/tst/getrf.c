@@ -18,7 +18,7 @@ int main(void){
   int IONE = 1;
   long long int   ISEED[4] = {0,0,0,1};   /* initial seed for zlarnv() */
 
-  LAPACKE_dlarnv_work(M, N, a, 1);
+  init_random(M, N, a, 1);
 
   int i = 0;
   for(i = 0; i < M * N; i++) b[i] = a[i];
