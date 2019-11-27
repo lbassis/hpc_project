@@ -7,3 +7,4 @@ pdf/
 *.Rout
 *.RData
 lib2/
+check/
