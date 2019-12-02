@@ -539,7 +539,7 @@ void my_dtrsm(CBLAS_LAYOUT layout,
     }
 }
 
-void my_dtrsm_omp(CBLAS_LAYOUT layout,
+void my_dtrsm_openmp(CBLAS_LAYOUT layout,
               CBLAS_SIDE side,
               CBLAS_UPLO uplo,
               CBLAS_TRANSPOSE transA,

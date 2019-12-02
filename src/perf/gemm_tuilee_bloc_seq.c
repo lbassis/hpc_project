@@ -49,7 +49,7 @@ int main(void) {
     perf(&start);
     
     for(l = 0; l < nb_loop; l++){
-      my_dgemm_Tile_omp2(CblasColMajor,
+      my_dgemm_tiled_openmp2(CblasColMajor,
                   CblasNoTrans,
                   CblasNoTrans,
                   /* m */ n,
@@ -69,7 +69,7 @@ int main(void) {
     perf(&start2);
     perf(&start);
     for(l = 0; l < nb_loop; l++){
-      my_dgemm_Tile_omp(CblasColMajor,
+      my_dgemm_tiled_openmp(CblasColMajor,
                   CblasNoTrans,
                   CblasNoTrans,
                   /* m */ n,

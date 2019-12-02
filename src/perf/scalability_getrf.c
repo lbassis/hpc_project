@@ -37,28 +37,28 @@ int main(int argc, char* argv[]){
   printf("getrf_mkl, %d, %lf\n", threads, performance);
 
   perf(&start);
-  my_dgetrf              (LAPACK_COL_MAJOR, N, N, b, N, NULL);
+  my_dgetrf_seq              (LAPACK_COL_MAJOR, N, N, b, N, NULL);
   perf(&stop);
   perf_diff(&start, &stop);
   performance = perf_mflops(&stop, (2 * N / 3) * N * N );
   printf("getrf_seq, %d, %lf\n", threads, performance);
 
   perf(&start);
-  my_dgetrf_omp_trsm_gemm(LAPACK_COL_MAJOR, N, N, c, N, NULL);
+  my_dgetrf_openmp(LAPACK_COL_MAJOR, N, N, c, N, NULL);
   perf(&stop);
   perf_diff(&start, &stop);
   performance = perf_mflops(&stop, (2 * N / 3) * N * N );
   printf("getrf_omp, %d, %lf\n", threads, performance);
 
   perf(&start);
-  my_dgetrf_Tile         (LAPACK_COL_MAJOR, N, N, e, N, NULL);
+  my_dgetrf_tiled         (LAPACK_COL_MAJOR, N, N, e, N, NULL);
   perf(&stop);
   perf_diff(&start, &stop);
   performance = perf_mflops(&stop, (2 * N / 3) * N * N );
   printf("getrf_tile, %d, %lf\n", threads, performance);
 
   perf(&start);
-  my_dgetrf_omp_Tile         (LAPACK_COL_MAJOR, N, N, e, N, NULL);
+  my_dgetrf_tiled_openmp         (LAPACK_COL_MAJOR, N, N, e, N, NULL);
   perf(&stop);
   perf_diff(&start, &stop);
   performance = perf_mflops(&stop, (2 * N / 3) * N * N );

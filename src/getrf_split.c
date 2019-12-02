@@ -12,9 +12,9 @@ void main(int argc, char* argv[]) {
   double* a = (double*)malloc(sizeof(double) * M * N);
 
   init_random(M, N, a, 1);
-  my_dgetrf_omp_trsm_gemm(LAPACK_COL_MAJOR, M, N, a, M, NULL);
+  my_dgetrf_openmp(LAPACK_COL_MAJOR, M, N, a, M, NULL);
   init_random(M, N, a, 1);
-  my_dgetrf(LAPACK_COL_MAJOR, M, N, a, M, NULL);
+  my_dgetrf_seq(LAPACK_COL_MAJOR, M, N, a, M, NULL);
 
   free(a);
 }

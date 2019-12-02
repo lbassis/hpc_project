@@ -45,7 +45,7 @@ int main(void) {
   for(n = MIN_SIZE; n < MAX_SIZE; n+=5){
     perf(&start);
     for(l = 0; l < nb_loop; l++){
-      my_dgemm(CblasColMajor,
+      my_dgemm_bloc(CblasColMajor,
                   CblasNoTrans,
                   CblasNoTrans,
                   /* m */ n,
@@ -63,7 +63,7 @@ int main(void) {
 
     perf(&start);
     for(l = 0; l < nb_loop; l++){
-      my_dgemm(CblasColMajor,
+      my_dgemm_bloc(CblasColMajor,
                   CblasNoTrans,
                   CblasNoTrans,
                   /* m */ n,

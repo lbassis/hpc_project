@@ -45,7 +45,7 @@ int main() {
   for(n = MIN_SIZE; n < MAX_SIZE; n+=2){
     perf(&start);
     for(l = 0; l < nb_loop; l++){
-      my_dgetrf(LAPACK_COL_MAJOR, n, n, a, n, NULL);
+      my_dgetrf_seq(LAPACK_COL_MAJOR, n, n, a, n, NULL);
     }
     perf(&stop);
     perf_diff(&start, &stop);

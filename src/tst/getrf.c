@@ -22,7 +22,7 @@ int main(void){
 
   int i = 0;
   for(i = 0; i < M * N; i++) b[i] = a[i];
-  my_dgetrf(LAPACK_COL_MAJOR, M, N, a, M, NULL);
+  my_dgetrf_seq(LAPACK_COL_MAJOR, M, N, a, M, NULL);
   //affiche(SIZE, SIZE, a, SIZE, stdout);
   //printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
   long long ipiv[M] = {};

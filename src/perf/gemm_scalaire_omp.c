@@ -45,7 +45,7 @@ int main(void) {
   for(n = MIN_SIZE; n < MAX_SIZE; n+=2){
     perf(&start);
     for(l = 0; l < nb_loop; l++){
-      my_dgemm_seq_omp(CblasColMajor,
+      my_dgemm_scal_openmp(CblasColMajor,
                   CblasNoTrans,
                   CblasNoTrans,
                   /* m */ n,

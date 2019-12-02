@@ -59,7 +59,7 @@ int main() {
 
     perf(&start);
     for(l = 0; l < nb_loop; l++){
-      my_dtrsm_omp(LAPACK_COL_MAJOR, CblasLeft, CblasLower, CblasNoTrans, CblasUnit, n, n, 1.3, a, n, d, n);
+      my_dtrsm_openmp(LAPACK_COL_MAJOR, CblasLeft, CblasLower, CblasNoTrans, CblasUnit, n, n, 1.3, a, n, d, n);
     }
     perf(&stop);
     perf_diff(&start, &stop);

@@ -49,7 +49,7 @@ int main() {
   for(n = MIN_BLOC; n < MAX_BLOC; n+=5){
     perf(&start);
     for(l = 0; l < nb_loop; l++){
-      my_dgemm_bloc(CblasColMajor,
+      my_dgemm_bloc_variable(CblasColMajor,
                   CblasNoTrans,
                   CblasNoTrans,
                   /* m */ MAX_SIZE,

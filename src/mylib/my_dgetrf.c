@@ -23,7 +23,7 @@
 
 
 
-void my_dgetrf(CBLAS_LAYOUT layout,
+void my_dgetrf_seq(CBLAS_LAYOUT layout,
 							 const int m,
 		           const int n,
 		           double* a,
@@ -104,7 +104,7 @@ void my_dgetrf(CBLAS_LAYOUT layout,
 
     for(i = k + 1; i < nb_bloc_m; i++){
       for(j = k + 1; j < nb_bloc_n; j++){
-        my_dgemm (CblasColMajor,
+        my_dgemm_bloc (CblasColMajor,
                      CblasNoTrans,
                      CblasNoTrans,
                      /* m */ (i < nb_bloc_m - 1) ? BLOC_SIZE : m - i * BLOC_SIZE,
@@ -143,7 +143,7 @@ void my_dgetrf(CBLAS_LAYOUT layout,
 
 
 
-void my_dgetrf_omp_trsm_gemm(CBLAS_LAYOUT layout,
+void my_dgetrf_openmp(CBLAS_LAYOUT layout,
 							 const int m,
 		           const int n,
 		           double* a,
@@ -230,7 +230,7 @@ void my_dgetrf_omp_trsm_gemm(CBLAS_LAYOUT layout,
 		#pragma omp parallel for collapse(2) private(i, j)
     for(i = k + 1; i < nb_bloc_m; i++){
       for(j = k + 1; j < nb_bloc_n; j++){
-        my_dgemm (CblasColMajor,
+    my_dgemm_bloc (CblasColMajor,
                      CblasNoTrans,
                      CblasNoTrans,
                      /* m */ (i < nb_bloc_m - 1) ? BLOC_SIZE : m - i * BLOC_SIZE,
@@ -268,7 +268,7 @@ void my_dgetrf_omp_trsm_gemm(CBLAS_LAYOUT layout,
 
 
 
-void my_dgetrf_omp_gemm(CBLAS_LAYOUT layout,
+void my_dgetrf_openmp_gemm(CBLAS_LAYOUT layout,
 							 const int m,
 		           const int n,
 		           double* a,
@@ -329,7 +329,7 @@ void my_dgetrf_omp_gemm(CBLAS_LAYOUT layout,
 		#pragma omp parallel for collapse(2) private(i, j)
     for(i = k + 1; i < nb_bloc_m; i++){
       for(j = k + 1; j < nb_bloc_n; j++){
-        my_dgemm (CblasColMajor,
+        my_dgemm_bloc (CblasColMajor,
                      CblasNoTrans,
                      CblasNoTrans,
                      /* m */ (i < nb_bloc_m - 1) ? BLOC_SIZE : m - i * BLOC_SIZE,
@@ -379,7 +379,7 @@ void my_dgetrf_omp_trsm_gemm2(CBLAS_LAYOUT layout,
 
     int i = 0;
     for(i = k + 1; i < nb_bloc_m; i++){
-      my_dtrsm_omp(CblasColMajor,
+      my_dtrsm_openmp(CblasColMajor,
                CblasRight,
                CblasUpper,
                CblasNoTrans,
@@ -394,7 +394,7 @@ void my_dgetrf_omp_trsm_gemm2(CBLAS_LAYOUT layout,
     }
     int j = 0;
     for(j = k + 1; j < nb_bloc_n; j++){
-      my_dtrsm_omp(/*int *Layout*/ CblasColMajor,
+      my_dtrsm_openmp(/*int *Layout*/ CblasColMajor,
                 /*int side*/      CblasLeft,
                 /*int uplo*/      CblasLower,
                 /*int transA*/    CblasNoTrans,
@@ -410,7 +410,7 @@ void my_dgetrf_omp_trsm_gemm2(CBLAS_LAYOUT layout,
 		//#pragma omp parallel for collapse(2) private(i, j)
     for(i = k + 1; i < nb_bloc_m; i++){
       for(j = k + 1; j < nb_bloc_n; j++){
-        my_dgemm_omp (CblasColMajor,
+        my_dgemm_bloc_openmp (CblasColMajor,
                      CblasNoTrans,
                      CblasNoTrans,
                      /* m */ (i < nb_bloc_m - 1) ? BLOC_SIZE : m - i * BLOC_SIZE,
@@ -429,7 +429,7 @@ void my_dgetrf_omp_trsm_gemm2(CBLAS_LAYOUT layout,
   }
 }
 
-void my_dgetrf_Tile(CBLAS_LAYOUT layout,
+void my_dgetrf_tiled(CBLAS_LAYOUT layout,
 							 const int m,
 		           const int n,
 		           double** a,
@@ -490,7 +490,7 @@ void my_dgetrf_Tile(CBLAS_LAYOUT layout,
     }
     for(i = k + 1; i < nb_bloc_m; i++){
       for(j = k + 1; j < nb_bloc_n; j++){
-        my_dgemm (CblasColMajor,
+        my_dgemm_bloc (CblasColMajor,
                      CblasNoTrans,
                      CblasNoTrans,
                      /* m */ (i < nb_bloc_m - 1) ? BLOC_SIZE : m - i * BLOC_SIZE,
@@ -510,7 +510,7 @@ void my_dgetrf_Tile(CBLAS_LAYOUT layout,
   (void)lda;
 }
 
-void my_dgetrf_omp_Tile(CBLAS_LAYOUT layout,
+void my_dgetrf_tiled_openmp(CBLAS_LAYOUT layout,
 							 const int m,
 		           const int n,
 		           double** a,
@@ -574,7 +574,7 @@ void my_dgetrf_omp_Tile(CBLAS_LAYOUT layout,
 #pragma omp parallel for collapse(2) private(i, j)
     for(i = k + 1; i < nb_bloc_m; i++){
       for(j = k + 1; j < nb_bloc_n; j++){
-        my_dgemm (CblasColMajor,
+        my_dgemm_bloc (CblasColMajor,
                      CblasNoTrans,
                      CblasNoTrans,
                      /* m */ (i < nb_bloc_m - 1) ? BLOC_SIZE : m - i * BLOC_SIZE,

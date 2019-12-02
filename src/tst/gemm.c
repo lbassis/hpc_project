@@ -50,7 +50,7 @@ int main(void){
       for (i = 0; i < ldc*n; i++) d[i] = c[i];
       /* c = a*b */
       //my_dgemm_omp(CblasColMajor, tr[ta], tr[tb], m, n, k, alpha, a, lda, b, ldb, beta, c, ldc);
-      my_dgemm_Tile(CblasColMajor, tr[ta], tr[tb], m, n, k, alpha, (const double**)a_Tile, lda, (const double**)b_Tile, ldb, beta, c_Tile, ldc);
+      my_dgemm_tiled(CblasColMajor, tr[ta], tr[tb], m, n, k, alpha, (const double**)a_Tile, lda, (const double**)b_Tile, ldb, beta, c_Tile, ldc);
 
       /* d = a*b */
       cblas_dgemm(CblasColMajor, tr[ta], tr[tb], m, n, k, alpha, a, lda, b, ldb, beta, d, ldc);
