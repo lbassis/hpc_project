@@ -25,4 +25,14 @@ void scatter_matrix(const int m,
                     const int dim[2],
                     const MPI_Comm comm);
 
+void gather_matrix(const int m,
+                    const int n,
+                    const double** in,
+                    double** out,
+                    const int nb_proc,
+                    const int me,
+                    const int dim[2],
+                    const MPI_Comm comm);
+
+
 #endif
