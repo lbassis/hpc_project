@@ -13,8 +13,8 @@ int main(void){
 
   MPI_Init(NULL, NULL);
 
-  int m = 150;
-  int n = 150;
+  int m = 5;
+  int n = 5;
   int lda = m;
   int IONE = 1;
   long long int   ISEED[4] = {0,0,0,1};
@@ -44,9 +44,14 @@ int main(void){
 
   LAPACKE_dlarnv_work(IONE, ISEED, n * lda, a);
 
-  double **a_Tile = lapack2tile( lda, n, 130, a, lda );
-  double ***out = NULL;
-  scatter_matrix(m, n, a_Tile, out, nb_proc, me,
+  double **a_Tile = lapack2tile( lda, n, 3, a, lda );
+  double **out = NULL;
+
+  if (me == 0)
+    affiche(m, n, a, m, stdout);
+
+  printf("____\n");
+  scatter_matrix(m, n, a_Tile, &out, nb_proc, me,
                       dims,
                       MPI_COMM_WORLD);
 
