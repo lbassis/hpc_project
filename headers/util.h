@@ -16,10 +16,12 @@ double** lapack2tile(int M, int N, int b, const double *Alapack, int lda);
 
 void tile2lapack(int M, int N, int b, const double** Atile, double *A, int lda );
 
+double **alloc_dist_matrix(int m, int n, int dims[]);
+
 void scatter_matrix(const int m,
                     const int n,
                     const double** in,
-                    double*** out,
+                    double** out,
                     const int nb_proc,
                     const int me,
                     const int dim[2],
@@ -33,6 +35,8 @@ void gather_matrix(const int m,
                     const int me,
                     const int dim[2],
                     const MPI_Comm comm);
+
+
 
 
 #endif

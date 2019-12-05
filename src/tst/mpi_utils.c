@@ -24,22 +24,6 @@ int main(void){
   MPI_Comm_size(MPI_COMM_WORLD, &nb_proc);
   MPI_Comm_rank(MPI_COMM_WORLD, &me);
 
-  //MPI_Comm comm_cart;
-  //int nb_row = sqrt(N);
-  //int periods[2] = {};
-  //int coords[2] = {};
-  //int new_me = -1;
-
-  //MPI_Cart_create(MPI_COMM_WORLD, 2, dims, periods, 1, &comm_cart);
-  //MPI_Comm_rank(comm_cart, &new_me);
-  //MPI_Cart_coords(comm_cart, new_me, 2, coords);
-
-  //int line[2] = {1, 0};
-
-  //MPI_Comm comm_line;
-  //MPI_Cart_sub(comm_cart, line, &comm_line);
-
-
   double* a = alloc_mat(lda, n);
   double* b = alloc_mat(lda, n);
 
@@ -47,13 +31,13 @@ int main(void){
 
   double **a_Tile = lapack2tile( lda, n, 3, a, lda );
   double **b_Tile = lapack2tile( lda, n, 3, b, lda );
-  double **out = NULL;
+  double **out = alloc_dist_matrix(m, n, dims);
 
   if (me == 0)
     affiche(m, n, a, m, stdout);
 
   printf("____\n");
-  scatter_matrix(m, n, a_Tile, &out, nb_proc, me, dims, MPI_COMM_WORLD);
+  scatter_matrix(m, n, a_Tile, out, nb_proc, me, dims, MPI_COMM_WORLD);
 
   MPI_Barrier(MPI_COMM_WORLD);
 
