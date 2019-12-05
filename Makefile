@@ -1,4 +1,4 @@
-CC = gcc
+CC = mpicc
 
 TESTS_SRC = $(notdir $(wildcard src/tst/*.c))
 BIN_TESTS = $(addprefix bin/tst/,$(TESTS_SRC:.c=.exe))
