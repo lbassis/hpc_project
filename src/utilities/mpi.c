@@ -70,58 +70,65 @@ void scatter_matrix(const int m,
       for(j_out = 0; j_out < n_out; j_out++){
         out[i_out + j_out * m_out] = (double*) malloc(TILE_SIZE * TILE_SIZE * sizeof(double));
         MPI_Recv(out[i_out + j_out * m_out], TILE_SIZE * TILE_SIZE, MPI_DOUBLE, 0, START, comm, &status);
-	sleep(me+1);
-	printf("p%d:\n", me);
-	affiche(TILE_SIZE, TILE_SIZE, out[i_out+j_out*m_out], TILE_SIZE, stdout);
+	/* sleep(me+1); */
+	/* printf("p%d:\n", me); */
+	/* affiche(TILE_SIZE, TILE_SIZE, out[i_out+j_out*m_out], TILE_SIZE, stdout); */
       }
     }
   }
 }
 
 void gather_matrix(const int m,
-                    const int n,
-                    const double** in,
-                    double** out,
-                    const int nb_proc,
-                    const int me,
-                    const int dim[2],
-                    const MPI_Comm comm){
+		   const int n,
+		   const double** in,
+		   double** out,
+		   const int nb_proc,
+		   const int me,
+		   const int dim[2],
+		   const MPI_Comm comm){
   int nb_bloc_m = (m + TILE_SIZE - 1) / TILE_SIZE;
   int nb_bloc_n = (n + TILE_SIZE - 1) / TILE_SIZE;
   int n_out = nb_bloc_n / dim[1] + (nb_bloc_n % dim[1] > me);
   int m_out = nb_bloc_m / dim[0] + (nb_bloc_n % dim[0] > me);
-  int i_local = 0, j_local = 0;
+  int i_out = 0, j_out = 0;
   int i,j;
   MPI_Status status;
+
   if(me == 0){
-    printf("gathering\n");
+    printf("gathering %dx%d into %dx%d\n", m_out, n_out, nb_bloc_m, nb_bloc_n);
     for( i = 0; i < nb_bloc_m; i++) {
       for( j = 0; j < nb_bloc_n; j++) {
 	int proc = j%dim[1]+(i*dim[1])%(dim[0]*dim[1]);
-       if(proc == 0){
+	printf("i = %d, j = %d, proc = %d\n", i, j, proc);
+        if(proc == 0){
           LAPACKE_dlacpy( LAPACK_COL_MAJOR, 'A', TILE_SIZE, TILE_SIZE,
-			       in[i_local + j_local * m_out], TILE_SIZE,
-			       out[i + j * nb_bloc_m], TILE_SIZE);
-          if(j_local == n_out - 1){
-            j_local = 0;
-            i_local ++;
-	    if (i_local == m_out) {
-	      i_local = 0;
-	    }
-	  }
-	  else{
-            j_local++;
+                               in[i_out + j_out * m_out], TILE_SIZE,
+                               out[i + j * nb_bloc_m], TILE_SIZE);
+          if(j_out == n_out - 1){
+            j_out = 0;
+            i_out++;
+            if(i_out == m_out - 1){
+              i_out = 0;
+            }
+          }else{
+            j_out++;
           }
         }else{
-          MPI_Recv(out[i + j * nb_bloc_m], TILE_SIZE * TILE_SIZE, MPI_DOUBLE, proc, proc, comm, &status);
+	  printf("%d <- %d\n", 0, proc);
+	  MPI_Recv(out[i + j * nb_bloc_m], TILE_SIZE * TILE_SIZE, MPI_DOUBLE, proc, START, comm, &status);
         }
       }
     }
+    printf("received everything\n");
   }else{
 
-    for(i_local = 0; i_local < m_out; i_local++){
-      for(j_local = 0; j_local < n_out; j_local++){
-        MPI_Send(in[i_local + j_local * m_out], TILE_SIZE * TILE_SIZE, MPI_DOUBLE, 0, me, comm);
+    for(i_out = 0; i_out < m_out; i_out++){
+      for(j_out = 0; j_out < n_out; j_out++){
+	printf("%d -> %d\n", me, 0);
+	MPI_Send(in[i_out + j_out * m_out], TILE_SIZE * TILE_SIZE, MPI_DOUBLE, 0, START, comm);
+		sleep(me*2);
+	/* printf("p%d:\n", me); */
+	/* affiche(TILE_SIZE, TILE_SIZE, out[i_out+j_out*m_out], TILE_SIZE, stdout); */
       }
     }
   }

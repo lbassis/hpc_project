@@ -6,19 +6,19 @@
 #include "util.h"
 #include "perf.h"
 
-
+#define TILE_SIZE 3
 
 int main(void){
   printf("%s: \n", __FILE__);
 
   MPI_Init(NULL, NULL);
 
-  int m = 5;
-  int n = 5;
+  int m = 10;
+  int n = 8;
   int lda = m;
   int IONE = 1;
   long long int   ISEED[4] = {0,0,0,1};
-  int dims[2] = {2, 2};
+  int dims[2] = {1, 1};
 
   int nb_proc, me;
   MPI_Comm_size(MPI_COMM_WORLD, &nb_proc);
@@ -36,20 +36,40 @@ int main(void){
   if (me == 0)
     affiche(m, n, a, m, stdout);
 
-  printf("____\n");
   scatter_matrix(m, n, a_Tile, out, nb_proc, me, dims, MPI_COMM_WORLD);
 
   MPI_Barrier(MPI_COMM_WORLD);
 
-  printf("____\n");
   gather_matrix(m, n, out, b_Tile, nb_proc, me, dims, MPI_COMM_WORLD);
 
   tile2lapack( m, n, 3, b_Tile, b, lda );
 
-  printf("____\n");
-  if (me == 0)
+  if (me == 0){
+    printf("____\n");
     affiche(m, n, b, m, stdout);
+  }
 
   MPI_Finalize();
+
+
   return 0;
+}
+
+
+void test_matrix() {
+
+  int i, j;
+  int m = 10;
+  int n = 10;
+  int p = 2;
+  int q = 2;
+  int dim[2] = {p,q};
+
+  for (i = 0; i < m; i++) {
+    for (j = 0; j < n; j++) {
+      int proc = j%dim[1]+(i*dim[1])%(dim[0]*dim[1]);
+      printf("%d ", proc);
+    }
+    printf("\n");
+  }
 }
