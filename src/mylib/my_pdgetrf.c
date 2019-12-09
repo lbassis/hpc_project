@@ -8,9 +8,10 @@
 #include "my_lapack.h"
 #include "my_dgemm.h"
 #include "my_dgetrf.h"
+#include "defines.h"
 
-#define BLOC_SIZE TILE_SIZE
-#define TILE_SIZE 130
+
+
 
 static int find_r(const int n){
   assert(n > -1);
@@ -38,6 +39,7 @@ void my_pdgetrf_tiled(CBLAS_LAYOUT layout,
   int r = find_r(nb_proc); // r closest integer to sqrt(nb_proc) (r < sqrt(nb_proc)) that also divide nb_proc
   int dim[2] = {r, nb_proc / r};
   int periods[2] = {1, 1};
+  printf("size of grid (%d, %d)\n", dim[0], dim[1]);
 
   MPI_Cart_create(MPI_COMM_WORLD, 2, dim, periods, 1, &comm_cart);
 
@@ -53,16 +55,17 @@ void my_pdgetrf_tiled(CBLAS_LAYOUT layout,
 
   int nb_bloc_n = (n + BLOC_SIZE - 1) / BLOC_SIZE;
   int nb_bloc_m = (m + BLOC_SIZE - 1) / BLOC_SIZE;
-  int n_local = nb_bloc_n / dim[1] + (nb_bloc_n % dim[1] > me);
-  int m_local = nb_bloc_m / dim[0] + (nb_bloc_n % dim[0] > me);
+  int n_local = nb_bloc_n / dim[1] + (nb_bloc_n % dim[1] > me % dim[1]);
+  int m_local = nb_bloc_m / dim[0] + (nb_bloc_n % dim[0] > me % dim[0]);
 
   int min = fmin(nb_bloc_n, nb_bloc_m);
   double* bloc_dgetf2;
-  double* tmp_bloc_dgetf2 = (double*) malloc(TILE_SIZE * TILE_SIZE * sizeof(double));
+  double* tmp_bloc_dgetf2 = (double*) calloc(TILE_SIZE * TILE_SIZE,  sizeof(double));
   double** line_trsm = (double**) malloc(n_local * sizeof(double));
   double** col_trsm = (double**) malloc(m_local * sizeof(double));
   double** tmp_line_trsm = (double**) malloc(n_local * sizeof(double));
   double** tmp_col_trsm = (double**) malloc(m_local * sizeof(double));
+
   int i = 0;
   int j = 0;
   for(i = 0; i < m_local; i++){
@@ -94,6 +97,11 @@ void my_pdgetrf_tiled(CBLAS_LAYOUT layout,
 
     int is_line_trsm = (me % dim[1] == k % dim[1]);
     int is_col_trsm = ((me - (me%dim[1])) % (dim[1] * dim[0]) == (k * dim[1]) % (dim[1] * dim[0]));
+
+    int rank_line_trsm = me % dim[1] + (k * dim[1]) % (dim[1] * dim[0]);
+    int rank_col_trsm = k % dim[1] + ((me - (me%dim[1])) % (dim[1] * dim[0]));
+    printf("ok alloc %d\n", proc);
+    affiche(TILE_SIZE, TILE_SIZE, bloc_dgetf2, TILE_SIZE, stdout);
 
     MPI_Barrier(MPI_COMM_WORLD);
     if(is_line_trsm){ // same line as k
@@ -152,17 +160,18 @@ void my_pdgetrf_tiled(CBLAS_LAYOUT layout,
         }
     }
     MPI_Barrier(MPI_COMM_WORLD);
+    printf("ok\n");
 
 
 
     for(i = k_local; i < m_local; i++){
-      MPI_Bcast(col_trsm[i], TILE_SIZE * TILE_SIZE, MPI_DOUBLE, (me - (me%dim[1])) % (dim[1] * dim[0]), comm_line);
+      MPI_Bcast(col_trsm[i], TILE_SIZE * TILE_SIZE, MPI_DOUBLE, rank_col_trsm, comm_line);
     }
 
     MPI_Barrier(MPI_COMM_WORLD);
 
     for(j = k_local; j < n_local; j++){
-      MPI_Bcast(line_trsm[i], TILE_SIZE * TILE_SIZE, MPI_DOUBLE, me % dim[1], comm_col);
+      MPI_Bcast(line_trsm[i], TILE_SIZE * TILE_SIZE, MPI_DOUBLE, rank_line_trsm, comm_col);
     }
 
 

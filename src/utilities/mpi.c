@@ -19,7 +19,7 @@ double **alloc_dist_matrix(int m, int n, int dims[]) {
   int n_out = nb_bloc_n / dims[1] + (nb_bloc_n % dims[1] > me % dims[1]);
   int m_out = nb_bloc_m / dims[0] + (nb_bloc_m % dims[0] > me % dims[0]);
 
-  return (double**) malloc(n_out * m_out * sizeof(double));
+  return (double**) calloc(n_out * m_out, sizeof(double));
 }
 
 

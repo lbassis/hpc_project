@@ -14,7 +14,7 @@ void affiche(unsigned long m, unsigned long n, double *a, unsigned long lda, FIL
   unsigned long i, j;
   for (i = 0; i < m; i++) {
     for (j = 0; j < n; j++) {
-      fprintf(flux, "%.0lf ", a[i + j * lda]);
+      fprintf(flux, "%lf ", a[i + j * lda]);
     }
     printf("\n");
   }

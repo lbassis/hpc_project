@@ -6,7 +6,7 @@
 #include "util.h"
 #include "perf.h"
 #include "defines.h"
-#define TILE_SIZE 3
+
 
 int main(void){
   printf("%s: \n", __FILE__);
@@ -39,10 +39,10 @@ int main(void){
     affiche(m, n, a, m, stdout);
 
   scatter_matrix(m, n, a_Tile, out, nb_proc, me, dims, MPI_COMM_WORLD);
-  
+
   MPI_Barrier(MPI_COMM_WORLD);
 
-  my_pdgetrf_tiled(LAPACK_COL_MAJOR, m, n, a_Tile, m, NULL);
+  my_pdgetrf_tiled(LAPACK_COL_MAJOR, m, n, out, m, NULL);
   gather_matrix(m, n, out, b_Tile, nb_proc, me, dims, MPI_COMM_WORLD);
 
   tile2lapack( m, n, 3, b_Tile, b, lda );
