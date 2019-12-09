@@ -82,7 +82,6 @@ void my_pdgetrf_tiled(CBLAS_LAYOUT layout,
     int proc = ((k*dim[0])%(dim[0]*dim[1])) + (k%dim[1]);
     if(proc == me){
       bloc_dgetf2 = a[k_local * (m_local+1)];
-      k_local++;
       my_dgetf2(CblasColMajor,
                 (k_local * dim[0] < m - 1) ? BLOC_SIZE : m - k_local * dim[0] * BLOC_SIZE,
                 (k_local * dim[1] < n - 1) ? BLOC_SIZE : n - k_local * dim[1] * BLOC_SIZE,
@@ -184,6 +183,9 @@ void my_pdgetrf_tiled(CBLAS_LAYOUT layout,
 		                 /* C[i][j] */ a[i + j * m_local],
 		                 /* ldc */ BLOC_SIZE);
       }
+    }
+    if(proc == me){
+      k_local++;
     }
   }
 

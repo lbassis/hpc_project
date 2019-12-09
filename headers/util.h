@@ -18,6 +18,8 @@ void tile2lapack(int M, int N, int b, const double** Atile, double *A, int lda )
 
 double **alloc_dist_matrix(int m, int n, int dims[]);
 
+void free_dist_tile_matrix(int m, int n, double** a, int dims[]);
+
 void scatter_matrix(const int m,
                     const int n,
                     const double** in,

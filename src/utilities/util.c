@@ -12,9 +12,9 @@
 void affiche(unsigned long m, unsigned long n, double *a, unsigned long lda, FILE *flux) {
 
   unsigned long i, j;
-  for (i = 0; i < n; i++) {
-    for (j = 0; j < m; j++) {
-      fprintf(flux, "%f ", a[lda*i + j]);
+  for (i = 0; i < m; i++) {
+    for (j = 0; j < n; j++) {
+      fprintf(flux, "%.0lf ", a[i + j * lda]);
     }
     printf("\n");
   }
@@ -115,6 +115,7 @@ tile2lapack( int M, int N, int b,
             LAPACKE_dlacpy_work( LAPACK_COL_MAJOR, 'A', mm, nn,
                                  tile, b,
                                  A+( lda * b * n + b * m ), lda );
+            //free(tile);
         }
     }
 }

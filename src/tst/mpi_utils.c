@@ -5,7 +5,7 @@
 #include <mpi.h>
 #include "util.h"
 #include "perf.h"
-
+#include "defines.h"
 #define TILE_SIZE 3
 
 int main(void){
@@ -18,7 +18,7 @@ int main(void){
   int lda = m;
   int IONE = 1;
   long long int   ISEED[4] = {0,0,0,1};
-  int dims[2] = {1, 1};
+  int dims[2] = {2, 2};
 
   int nb_proc, me;
   MPI_Comm_size(MPI_COMM_WORLD, &nb_proc);
@@ -27,7 +27,9 @@ int main(void){
   double* a = alloc_mat(lda, n);
   double* b = alloc_mat(lda, n);
 
-  LAPACKE_dlarnv_work(IONE, ISEED, n * lda, a);
+  //LAPACKE_dlarnv_work(IONE, ISEED, n * lda, a);
+  int i;
+  for(i = 0; i < n * lda; i++) a[i] = i;
 
   double **a_Tile = lapack2tile( lda, n, 3, a, lda );
   double **b_Tile = lapack2tile( lda, n, 3, b, lda );
@@ -43,12 +45,23 @@ int main(void){
   gather_matrix(m, n, out, b_Tile, nb_proc, me, dims, MPI_COMM_WORLD);
 
   tile2lapack( m, n, 3, b_Tile, b, lda );
+  tile2lapack( m, n, 3, a_Tile, a, lda );
 
   if (me == 0){
     printf("____\n");
     affiche(m, n, b, m, stdout);
   }
 
+  int MT = (m + BLOC_SIZE - 1) / BLOC_SIZE;
+  int NT = (n + BLOC_SIZE - 1) / BLOC_SIZE;
+
+  for(i = 0; i < MT * NT; i++) {
+    free(a_Tile[i]);
+    free(b_Tile[i]);
+  }
+  free(out);
+  free(a);
+  free(b);
   MPI_Finalize();
 
 
