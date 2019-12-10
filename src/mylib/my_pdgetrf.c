@@ -76,6 +76,9 @@ void my_pdgetrf_tiled(CBLAS_LAYOUT layout,
   double** tmp_line_trsm = (double**) malloc(n_local * sizeof(double));
   double** tmp_col_trsm = (double**) malloc(m_local * sizeof(double));
 
+  int has_last_line = (me_line == n % dim[1]);
+  int has_last_col = (me_col == m % dim[0]);
+
   int i = 0;
   int j = 0;
   for(i = 0; i < m_local; i++){
@@ -90,33 +93,45 @@ void my_pdgetrf_tiled(CBLAS_LAYOUT layout,
   int k_local_m = 0, k_local_n = 0;
   for(k = 0; k < min; k++){
 
-
+    if (me == 0) {
+      printf("premier bloc en k = %d:\n", k);
+      affiche(TILE_SIZE, TILE_SIZE, a[0], TILE_SIZE, stdout);
+    }
     int proc = ((k*dim[0])%(dim[0]*dim[1])) + (k%dim[1]);
+    int is_col_trsm = (me % dim[1] == k % dim[1]);
+    int is_line_trsm = ((me - (me%dim[1]))/dim[1] == k % dim[0]);
+
     //printf("p%d: proc maintenant c'est %d (%d en ligne et %d en colonne)\n", me, proc, k%dim[1], k%dim[0]);
     if(proc == me){
       bloc_dgetf2 = a[k_local_m + k_local_n * m_local];
       my_dgetf2(CblasColMajor,
-                (k_local_m * dim[0] < m - 1) ? BLOC_SIZE : m - k_local_m * dim[0] * BLOC_SIZE,
-                (k_local_n * dim[1] < n - 1) ? BLOC_SIZE : n - k_local_n * dim[1] * BLOC_SIZE,
+		(has_last_col && k_local_m == m_local)? TILE_SIZE - (m % TILE_SIZE) : TILE_SIZE,
+		(has_last_line && k_local_n == n_local)? TILE_SIZE - (n % TILE_SIZE) : TILE_SIZE,
+                //(k_local_m * dim[0] < m - 1) ? BLOC_SIZE : m - k_local_m * dim[0] * BLOC_SIZE,
+                //(k_local_n * dim[1] < n - 1) ? BLOC_SIZE : n - k_local_n * dim[1] * BLOC_SIZE,
                 bloc_dgetf2,
                 BLOC_SIZE,
                 NULL);
+      /* if (is_col_trsm) { */
+      /* 	k_local_m++; */
+      /* } */
+      /* if (is_line_trsm) { */
+      /* 	k_local_n++; */
+      /* } */
     }else{
       bloc_dgetf2 = tmp_bloc_dgetf2;
     }
 
-    int is_col_trsm = (me % dim[1] == k % dim[1]);
-    int is_line_trsm = ((me - (me%dim[1]))/dim[1] == k % dim[0]);
 
     if (proc == me) {
       printf("p%d va envoyer ce bloc:\n", me);
       affiche(TILE_SIZE, TILE_SIZE, bloc_dgetf2, TILE_SIZE, stdout);
     }
-    MPI_Barrier(MPI_COMM_WORLD);
+
     if(is_line_trsm){ // same line as k
       MPI_Bcast(bloc_dgetf2, TILE_SIZE * TILE_SIZE, MPI_DOUBLE, k%dim[1], comm_line);
     }
-    MPI_Barrier(MPI_COMM_WORLD);
+
     if(is_col_trsm){ // same column as k
       MPI_Bcast(bloc_dgetf2, TILE_SIZE * TILE_SIZE, MPI_DOUBLE, k%dim[0], comm_col);
     }
@@ -128,14 +143,15 @@ void my_pdgetrf_tiled(CBLAS_LAYOUT layout,
 
     if(is_col_trsm){
       printf("pointer: %p\n",  a[i + k_local_n * m_local]);
-      for(i = k_local_m; i < m_local; i++){
+      for(i = k_local_m + (proc == me); i < m_local; i++){
 	printf("p%d va faire son trsm\n", me);
+	printf("142 change %d\n", i + k_local_n * m_local);
         my_dtrsm(CblasColMajor,
                 CblasRight,
                 CblasUpper,
                 CblasNoTrans,
                 CblasNonUnit,
-                /* m */ (i * dim[0] < m - 1) ? BLOC_SIZE : m - i * dim[0] * BLOC_SIZE,
+		 /* m */ (has_last_col && i == m_local)? TILE_SIZE - (m % TILE_SIZE) : TILE_SIZE,
                 /* n */ BLOC_SIZE,
                 /* alpha */ 1,
                 /* L\U */ bloc_dgetf2,
@@ -157,14 +173,14 @@ void my_pdgetrf_tiled(CBLAS_LAYOUT layout,
 
     if(is_line_trsm){
 
-      for(j = k_local_n; j < n_local; j++){
+      for(j = k_local_n + (proc == me); j < n_local; j++){
         my_dtrsm(/*int *Layout*/ CblasColMajor,
                   /*int side*/      CblasLeft,
                   /*int uplo*/      CblasLower,
                   /*int transA*/    CblasNoTrans,
                   /*int diag*/      CblasUnit,
                   /*int m*/         BLOC_SIZE,
-                  /*int n*/         (j * dim[1] < n - 1) ? BLOC_SIZE : n - j * dim[1] * BLOC_SIZE,
+		 /*int n*/          (has_last_line && j == n_local)? TILE_SIZE - (n % TILE_SIZE) : TILE_SIZE,
                   /*double alpha*/  1,
                   /*double *a*/     bloc_dgetf2,
                   /*int lda*/       BLOC_SIZE,
@@ -174,19 +190,15 @@ void my_pdgetrf_tiled(CBLAS_LAYOUT layout,
         line_trsm[j] = a[k_local_m + j * m_local];
       }
       k_local_m++;
-
     }else{
 
         for(j = k_local_n; j < n_local; j++){
           line_trsm[j] = tmp_line_trsm[j];
         }
     }
-    MPI_Barrier(MPI_COMM_WORLD);
     for(i = k_local_m; i < m_local; i++){
       MPI_Bcast(col_trsm[i], TILE_SIZE * TILE_SIZE, MPI_DOUBLE, k % dim[0], comm_line);//comm_line
     }
-
-    MPI_Barrier(MPI_COMM_WORLD);
 
     for(j = k_local_n; j < n_local; j++){
       MPI_Bcast(line_trsm[j], TILE_SIZE * TILE_SIZE, MPI_DOUBLE, k % dim[1], comm_col);//comm_col
@@ -210,7 +222,6 @@ void my_pdgetrf_tiled(CBLAS_LAYOUT layout,
   		                 /* ldc */ BLOC_SIZE);
       }
     }
-    MPI_Barrier(MPI_COMM_WORLD);
     printf("coucou\n");
   }
 
