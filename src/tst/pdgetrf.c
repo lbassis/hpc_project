@@ -27,9 +27,9 @@ int main(void){
   double* a = alloc_mat(lda, n);
   double* b = alloc_mat(lda, n);
 
-  //LAPACKE_dlarnv_work(IONE, ISEED, n * lda, a);
+  LAPACKE_dlarnv_work(IONE, ISEED, n * lda, a);
   int i;
-  for(i = 0; i < n * lda; i++) a[i] = i;
+  //for(i = 0; i < n * lda; i++) a[i] = i;
 
   double **a_Tile = lapack2tile( lda, n, 3, a, lda );
   double **b_Tile = lapack2tile( lda, n, 3, b, lda );
@@ -42,7 +42,7 @@ int main(void){
 
   MPI_Barrier(MPI_COMM_WORLD);
 
-  my_pdgetrf_tiled(LAPACK_COL_MAJOR, m, n, out, m, NULL);
+  my_pdgetrf_tiled(LAPACK_COL_MAJOR, m, n, out, m, NULL, dims);
   gather_matrix(m, n, out, b_Tile, nb_proc, me, dims, MPI_COMM_WORLD);
 
   tile2lapack( m, n, 3, b_Tile, b, lda );

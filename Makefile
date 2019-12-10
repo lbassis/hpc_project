@@ -33,7 +33,8 @@ uninstall:
 	rm -rf bin bin/tst bin/perf $(LIB_DIR) obj obj/mylib obj/mylibperf obj/utilities obj/tst obj/perf pdf data
 
 CFLAGS = -Wall -Wextra
-#CFLAGS += -O0 -g
+CFLAGS += -O0 -g
+#CFLAGS += -O3
 CFLAGS += -I./headers
 #CFLAGS += -I/home/cisd-simonin/myblas
 CFLAGS +=  -DMKL_ILP64 -m64 -I${MKLROOT}/include
