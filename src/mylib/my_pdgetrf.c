@@ -21,7 +21,7 @@ static int find_r(const int n){
 }
 
 void my_pdgetrf_tiled(CBLAS_LAYOUT layout,
-							 const int m,
+		      const int m,
 		           const int n,
 		           double** a,
 	             const int lda,
@@ -42,14 +42,15 @@ void my_pdgetrf_tiled(CBLAS_LAYOUT layout,
   int periods[2] = {1, 1};
   printf("size of grid (%d, %d)\n", dim[0], dim[1]);
 
-  MPI_Cart_create(MPI_COMM_WORLD, 2, dim, periods, 1, &comm_cart);
+  MPI_Cart_create(MPI_COMM_WORLD, 2, dim, periods, 0, &comm_cart);
   int new_me;
   MPI_Comm_rank(comm_cart, &new_me);
   int coords[2];
   MPI_Cart_coords(comm_cart, new_me, 2, coords);
   printf("p: %d, cart: %d, coords: (%d, %d)\n", me, new_me, coords[0], coords[1]);
-  int line[2] = {1, 0};
-  int column[2] = {0, 1};
+  int line[2] = {0, 1};
+  int column[2] = {1, 0};
+
 
   MPI_Comm comm_line;
   MPI_Comm comm_col;
@@ -58,6 +59,9 @@ void my_pdgetrf_tiled(CBLAS_LAYOUT layout,
   int me_line, me_col;
   MPI_Comm_rank(comm_line, &me_line);
   MPI_Comm_rank(comm_col, &me_col);
+
+  printf("p%d = p%d en ligne et p%d en colonne\n", me, me_line, me_col);
+  //printf("p%d: comm_line = %d et comm_col = %d\n", me, comm_line, comm_col);
 
   int nb_bloc_n = (n + BLOC_SIZE - 1) / BLOC_SIZE;
   int nb_bloc_m = (m + BLOC_SIZE - 1) / BLOC_SIZE;
@@ -89,6 +93,7 @@ void my_pdgetrf_tiled(CBLAS_LAYOUT layout,
 
 
     int proc = ((k*dim[0])%(dim[0]*dim[1])) + (k%dim[1]);
+    printf("p%d: proc maintenant c'est %d (%d en ligne et %d en colonne)\n", me, proc, k%dim[1], k%dim[0]);
     if(proc == me){
       bloc_dgetf2 = a[k_local_m + k_local_n * m_local];
       my_dgetf2(CblasColMajor,
@@ -97,24 +102,26 @@ void my_pdgetrf_tiled(CBLAS_LAYOUT layout,
                 bloc_dgetf2,
                 BLOC_SIZE,
                 NULL);
+      printf("bloc dgetf2 factorise:::::\n");
+      affiche(TILE_SIZE, TILE_SIZE, bloc_dgetf2, TILE_SIZE, stdout);
+      printf("_____\n");
+
     }else{
       bloc_dgetf2 = tmp_bloc_dgetf2;
     }
 
     int is_col_trsm = (me % dim[1] == k % dim[1]);
-    int is_line_trsm = ((me - (me%dim[1])) % (dim[1] * dim[0]) == (k * dim[1]) % (dim[1] * dim[0]));
-
-    affiche(TILE_SIZE, TILE_SIZE, bloc_dgetf2, TILE_SIZE, stdout);
+    int is_line_trsm = ((me - (me%dim[1]))/dim[1] == k % dim[0]);
+    //int is_line_trsm = ((me - (me%dim[1])) % (dim[1] * dim[0]) == (k * dim[1]) % (dim[1] * dim[0]));
+    //printf("p%d is_col:%d, is_line:%d\n", me, is_col_trsm, is_line_trsm);
 
     MPI_Barrier(MPI_COMM_WORLD);
     if(is_line_trsm){ // same line as k
-      printf("getf2 line sender: %d, me: %d\n", k % dim[0], me);
-      MPI_Bcast(bloc_dgetf2, TILE_SIZE * TILE_SIZE, MPI_DOUBLE, proc, comm_col);
+      MPI_Bcast(bloc_dgetf2, TILE_SIZE * TILE_SIZE, MPI_DOUBLE, k%dim[1], comm_line);
     }
     MPI_Barrier(MPI_COMM_WORLD);
     if(is_col_trsm){ // same column as k
-      printf("getf2 col sender: %d, me: %d\n", k % dim[0], me);
-      MPI_Bcast(bloc_dgetf2, TILE_SIZE * TILE_SIZE, MPI_DOUBLE, proc, comm_line);
+      MPI_Bcast(bloc_dgetf2, TILE_SIZE * TILE_SIZE, MPI_DOUBLE, k%dim[0], comm_col);
     }
     MPI_Barrier(MPI_COMM_WORLD);
 
@@ -130,7 +137,7 @@ void my_pdgetrf_tiled(CBLAS_LAYOUT layout,
                 /* n */ BLOC_SIZE,
                 /* alpha */ 1,
                 /* L\U */ bloc_dgetf2,
-	               /* lda */ BLOC_SIZE,
+  	               /* lda */ BLOC_SIZE,
                  /* A[i][k] */ a[i + k_local_m * m_local],
                  /* ldb */ BLOC_SIZE);
 
@@ -173,31 +180,33 @@ void my_pdgetrf_tiled(CBLAS_LAYOUT layout,
         }
     }
     MPI_Barrier(MPI_COMM_WORLD);
-
-
-
-
     //sleep(me+1);
     for(i = k_local_m; i < m_local; i++){
-      printf("dtrsm col sender: %d, me: %d\n", k % dim[0], me);
+      /* printf("p%d: i = %d; i < %d\n", me, k_local_m, m_local); */
+      /* printf("dtrsm col sender: %d, sender_glob: %d, me: %d\n", k % dim[0], k, me); */
 
       //affiche(TILE_SIZE, TILE_SIZE, col_trsm[i], TILE_SIZE, stdout);
       //MPI_Barrier(comm_line);
       MPI_Bcast(col_trsm[i], TILE_SIZE * TILE_SIZE, MPI_DOUBLE, k % dim[0], comm_line);//comm_line
-      MPI_Barrier(comm_line);
+      
+      //MPI_Barrier(comm_line);
 
 
     }
 
-    printf("me: %d\n", me);
+    //printf("me: %d\n", me);
 
     MPI_Barrier(MPI_COMM_WORLD);
-    printf("gvjhbknlm\n");
 
     for(j = k_local_n; j < n_local; j++){
-      MPI_Bcast(line_trsm[i], TILE_SIZE * TILE_SIZE, MPI_DOUBLE, k % dim[1], comm_col);//comm_col
+      //sleep(2*me);
+      //printf("p%d: root = %d\n", me, k%dim[1]);
+      //affiche(TILE_SIZE, TILE_SIZE, line_trsm[j], TILE_SIZE, stdout);
+      // MPI_Bcast(line_trsm[j], TILE_SIZE * TILE_SIZE, MPI_DOUBLE, k % dim[1], comm_col);//comm_col
+      //affiche(TILE_SIZE, TILE_SIZE, line_trsm[j], TILE_SIZE, stdout);
     }
-
+    MPI_Barrier(MPI_COMM_WORLD);
+      printf("p%d bcast ok\n", me);
 
     for(i = k_local_m; i < m_local; i++){
       for(j = k_local_n; j < n_local; j++){
@@ -209,14 +218,16 @@ void my_pdgetrf_tiled(CBLAS_LAYOUT layout,
                      /* k */ BLOC_SIZE,
                      /* alpha */ -1.,
                      /* A[i][k] */ col_trsm[i],
-	                   /* lda */ BLOC_SIZE,
-		                 /* B[k][j] */ line_trsm[j],
-		                 /* ldb */ BLOC_SIZE,
+  	                   /* lda */ BLOC_SIZE,
+  		                 /* B[k][j] */ line_trsm[j],
+  		                 /* ldb */ BLOC_SIZE,
                      /* beta */ 1.,
-		                 /* C[i][j] */ a[i + j * m_local],
-		                 /* ldc */ BLOC_SIZE);
+  		                 /* C[i][j] */ a[i + j * m_local],
+  		                 /* ldc */ BLOC_SIZE);
       }
     }
+    MPI_Barrier(MPI_COMM_WORLD);
+    printf("coucou\n");
   }
 
   MPI_Barrier(MPI_COMM_WORLD);
