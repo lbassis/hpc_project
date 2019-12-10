@@ -180,30 +180,15 @@ void my_pdgetrf_tiled(CBLAS_LAYOUT layout,
         }
     }
     MPI_Barrier(MPI_COMM_WORLD);
-    //sleep(me+1);
     for(i = k_local_m; i < m_local; i++){
-      /* printf("p%d: i = %d; i < %d\n", me, k_local_m, m_local); */
-      /* printf("dtrsm col sender: %d, sender_glob: %d, me: %d\n", k % dim[0], k, me); */
-
-      //affiche(TILE_SIZE, TILE_SIZE, col_trsm[i], TILE_SIZE, stdout);
-      //MPI_Barrier(comm_line);
       MPI_Bcast(col_trsm[i], TILE_SIZE * TILE_SIZE, MPI_DOUBLE, k % dim[0], comm_line);//comm_line
-      
-      //MPI_Barrier(comm_line);
-
-
     }
 
-    //printf("me: %d\n", me);
 
     MPI_Barrier(MPI_COMM_WORLD);
 
     for(j = k_local_n; j < n_local; j++){
-      //sleep(2*me);
-      //printf("p%d: root = %d\n", me, k%dim[1]);
-      //affiche(TILE_SIZE, TILE_SIZE, line_trsm[j], TILE_SIZE, stdout);
-      // MPI_Bcast(line_trsm[j], TILE_SIZE * TILE_SIZE, MPI_DOUBLE, k % dim[1], comm_col);//comm_col
-      //affiche(TILE_SIZE, TILE_SIZE, line_trsm[j], TILE_SIZE, stdout);
+      MPI_Bcast(line_trsm[j], TILE_SIZE * TILE_SIZE, MPI_DOUBLE, k % dim[1], comm_col);//comm_col
     }
     MPI_Barrier(MPI_COMM_WORLD);
       printf("p%d bcast ok\n", me);
