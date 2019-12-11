@@ -14,11 +14,11 @@ int main(void){
   MPI_Init(NULL, NULL);
 
   int m = 10;
-  int n = 8;
+  int n = 10;
   int lda = m;
   int IONE = 1;
   long long int   ISEED[4] = {0,0,0,1};
-  int dims[2] = {2, 2};
+  int dims[2] = {6, 6};
 
   int nb_proc, me;
   MPI_Comm_size(MPI_COMM_WORLD, &nb_proc);

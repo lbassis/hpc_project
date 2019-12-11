@@ -13,7 +13,7 @@ int main(void){
 
   MPI_Init(NULL, NULL);
 
-  int m = 10;
+  int m = 8;
   int n = 8;
   int lda = m;
   int IONE = 1;
