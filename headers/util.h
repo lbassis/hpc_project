@@ -31,7 +31,7 @@ void scatter_matrix(const int m,
 
 void gather_matrix(const int m,
                     const int n,
-                    const double** in,
+                    double** in,
                     double** out,
                     const int nb_proc,
                     const int me,

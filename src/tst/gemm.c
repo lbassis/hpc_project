@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-//#include <mkl_cblas.h>
-//#include <mkl.h>
+#include <mkl_cblas.h>
+#include <mkl.h>
 
 #include "util.h"
 #include "perf.h"

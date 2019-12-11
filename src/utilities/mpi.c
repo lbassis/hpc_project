@@ -5,10 +5,10 @@
 #include <mpi.h>
 #include "util.h"
 #include "perf.h"
+#include "defines.h"
 
 
-#define TILE_SIZE 3
-#define START 101
+
 
 double **alloc_dist_matrix(int m, int n, int dims[]) {
 
@@ -56,7 +56,7 @@ void scatter_matrix(const int m,
   if(me == 0){
     for( i = 0; i < nb_bloc_m; i++) {
       for( j = 0; j < nb_bloc_n; j++) {
-	int proc = j%dim[1]+(i*dim[1])%(dim[0]*dim[1]);
+	       int proc = j%dim[1]+(i*dim[1])%(dim[0]*dim[1]);
         if(proc == 0){
           out[i_out + j_out * m_out] = (double*) malloc(TILE_SIZE * TILE_SIZE * sizeof(double));
           LAPACKE_dlacpy( LAPACK_COL_MAJOR, 'A', TILE_SIZE, TILE_SIZE,
@@ -69,7 +69,7 @@ void scatter_matrix(const int m,
             j_out++;
           }
         }else{
-          printf("p%d: (%d, %d)\n", proc, i, j);
+          //printf("p%d: (%d, %d)\n", proc, i, j);
           MPI_Send(in[i + j * nb_bloc_m], TILE_SIZE * TILE_SIZE, MPI_DOUBLE, proc, START, comm);
         }
       }
@@ -87,7 +87,7 @@ void scatter_matrix(const int m,
 
 void gather_matrix(const int m,
                    const int n,
-                   const double** in,
+                   double** in,
                    double** out,
                    const int nb_proc,
                    const int me,

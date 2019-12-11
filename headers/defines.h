@@ -7,4 +7,6 @@
 
 //#define BLOC_SIZE 130
 #define BLOC_SIZE TILE_SIZE
-#define TILE_SIZE 3
+#define TILE_SIZE 130
+
+#define START 101 // MPI scatter and gather tag

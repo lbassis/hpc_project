@@ -4,7 +4,7 @@ TESTS_SRC = $(notdir $(wildcard src/tst/*.c))
 BIN_TESTS = $(addprefix bin/tst/,$(TESTS_SRC:.c=.exe))
 
 PERF_SRC = $(notdir $(wildcard src/perf/*.c))
-BIN_PERF = $(addprefix bin/perf/,$(PERF_SRC:.c=.exe)) bin/perf/getrf_split.exe
+BIN_PERF = $(addprefix bin/perf/,$(PERF_SRC:.c=.exe)) bin/perf/dgetrf_profiling.exe
 
 BIN = $(BIN_TESTS) $(BIN_PERF)
 
@@ -33,8 +33,8 @@ uninstall:
 	rm -rf bin bin/tst bin/perf $(LIB_DIR) obj obj/mylib obj/mylibperf obj/utilities obj/tst obj/perf pdf data
 
 CFLAGS = -Wall -Wextra
-CFLAGS += -O0 -g
-#CFLAGS += -O3
+#CFLAGS += -O0 -g
+CFLAGS += -O3
 CFLAGS += -I./headers
 #CFLAGS += -I/home/cisd-simonin/myblas
 CFLAGS +=  -DMKL_ILP64 -m64 -I${MKLROOT}/include
@@ -48,28 +48,28 @@ LDLIBS = -L${MKLROOT}/lib/intel64 -Wl,--no-as-needed -lmkl_intel_ilp64 -lmkl_gnu
 
 
 obj/mylibperf/%.o: src/mylib/%.c
-	$(CC) -o $@ $(CFLAGS) -c $< -fPIC -DPERF=0
+	@$(CC) -o $@ $(CFLAGS) -c $< -fPIC -DPERF=0
 
 obj/mylib/%.o: src/mylib/%.c
-	$(CC) -o $@ $(CFLAGS) -c $< -fPIC
+	@$(CC) -o $@ $(CFLAGS) -c $< -fPIC
 
 obj/utilities/%.o: src/utilities/%.c
-	$(CC) -o $@ $(CFLAGS) -c $< -fPIC
+	@$(CC) -o $@ $(CFLAGS) -c $< -fPIC
 
 obj/tst/%.o: src/tst/%.c
-	$(CC) -o $@ $(CFLAGS) -c $<
+	@$(CC) -o $@ $(CFLAGS) -c $<
 
-obj/perf/getrf_split.o: src/getrf_split.c
+obj/perf/dgetrf_profiling.o: src/dgetrf_profiling.c
 	$(CC) -o $@ $(CFLAGS) -c $<
 
 obj/perf/%.o: src/perf/%.c
-	$(CC) -o $@ $(CFLAGS) -c $<
+	@$(CC) -o $@ $(CFLAGS) -c $<
 
 bin/tst/%.exe: obj/tst/%.o $(UTILS_OBJ) $(LIB_DIR)/libmyblas.so
-	$(CC) -o $@ $(CFLAGS) $^ $(LDLIBS)
+	@$(CC) -o $@ $(CFLAGS) $^ $(LDLIBS)
 
 
-bin/perf/getrf_split.exe: obj/perf/getrf_split.o obj/utilities/util.o $(LIB_DIR)/libmyblasperf.so
+bin/perf/dgetrf_profiling.exe: obj/perf/dgetrf_profiling.o obj/utilities/util.o obj/utilities/mpi.o $(LIB_DIR)/libmyblasperf.so
 	$(CC) -o $@ $(CFLAGS) $^ $(LDLIBS)
 
 bin/perf/%.exe: obj/perf/%.o $(UTILS_OBJ) $(LIB_DIR)/libmyblas.so
