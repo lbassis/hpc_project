@@ -13,12 +13,12 @@ int main(void){
 
   MPI_Init(NULL, NULL);
 
-  int m = 10;
-  int n = 10;
+  int m = 3*TILE_SIZE;
+  int n = 3*TILE_SIZE;
   int lda = m;
   int IONE = 1;
   long long int   ISEED[4] = {0,0,0,1};
-  int dims[2] = {6, 6};
+  int dims[2] = {2, 2};
 
   int nb_proc, me;
   MPI_Comm_size(MPI_COMM_WORLD, &nb_proc);
@@ -31,8 +31,8 @@ int main(void){
   init_random(lda, n, a, 1);
   int i, j;
 
-  double **a_Tile = lapack2tile( lda, n, 3, a, lda );
-  double **b_Tile = lapack2tile( lda, n, 3, b, lda );
+  double **a_Tile = lapack2tile( lda, n, TILE_SIZE, a, lda );
+  double **b_Tile = lapack2tile( lda, n, TILE_SIZE, b, lda );
   double **out = alloc_dist_matrix(m, n, dims);
 
   if (me == 0)
@@ -69,7 +69,7 @@ int main(void){
   //affiche(TILE_SIZE, TILE_SIZE, out[0], TILE_SIZE, stdout);
   gather_matrix(m, n, out, b_Tile, nb_proc, me, dims, MPI_COMM_WORLD);
 
-  tile2lapack( m, n, 3, b_Tile, b, lda );
+  tile2lapack( m, n, TILE_SIZE, b_Tile, b, lda );
   //tile2lapack( m, n, 3, a_Tile, a, lda );
 
   if (me == 0){
@@ -79,8 +79,8 @@ int main(void){
     affiche(m, n, a, m, stdout);
   }
 
-  int MT = (m + BLOC_SIZE - 1) / BLOC_SIZE;
-  int NT = (n + BLOC_SIZE - 1) / BLOC_SIZE;
+  int MT = (m + TILE_SIZE - 1) / TILE_SIZE;
+  int NT = (n + TILE_SIZE - 1) / TILE_SIZE;
 
   for(i = 0; i < MT * NT; i++) {
     free(a_Tile[i]);

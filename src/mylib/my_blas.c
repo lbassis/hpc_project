@@ -146,7 +146,7 @@ void my_dtrsm2(CBLAS_LAYOUT layout,
     assert(layout == CblasColMajor);
 
     if (n <= 0 || m <= 0) {
-      fprintf(stderr, "my_dtrsm matrix dimentions invalid\n");
+      fprintf(stderr, "my_dtrsm matrix dimentions invalid (%d, %d)\n", m, n);
       return;
     }
 

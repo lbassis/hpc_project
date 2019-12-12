@@ -119,8 +119,8 @@ void my_pdgetrf_tiled(CBLAS_LAYOUT layout,
     if(proc == me){
       bloc_dgetf2 = a[k_local_m + k_local_n * m_local];
       my_dgetf2(CblasColMajor,
-		(has_last_line && k_local_m == m_local - 1)? (m % TILE_SIZE) : TILE_SIZE,
-		(has_last_col && k_local_n == n_local - 1)? (n % TILE_SIZE) : TILE_SIZE,
+		(has_last_line && k_local_m == m_local - 1 && ((m % TILE_SIZE) != 0))? (m % TILE_SIZE) : TILE_SIZE,
+		(has_last_col && k_local_n == n_local - 1 && ((n % TILE_SIZE) != 0))? (n % TILE_SIZE) : TILE_SIZE,
                 bloc_dgetf2,
                 TILE_SIZE,
                 NULL);
@@ -157,12 +157,13 @@ void my_pdgetrf_tiled(CBLAS_LAYOUT layout,
 
     if(is_col_trsm){
       for(i = k_local_m + (proc == me); i < m_local; i++){
+				//printf("p%d: col (%d, %d), size: %d\n", me, i, k_local_n, (has_last_line && i == m_local - 1)? (m % TILE_SIZE) : TILE_SIZE);
 	       my_dtrsm(CblasColMajor,
                 CblasRight,
                 CblasUpper,
                 CblasNoTrans,
                 CblasNonUnit,
-		            /* m */ (has_last_line && i == m_local - 1)? (m % TILE_SIZE) : TILE_SIZE,
+		            /* m */ (has_last_line && i == m_local - 1 && ((m % TILE_SIZE) != 0))? (m % TILE_SIZE) : TILE_SIZE,
                 /* n */ TILE_SIZE,
                 /* alpha */ 1,
                 /* L\U */ bloc_dgetf2,
@@ -177,16 +178,17 @@ void my_pdgetrf_tiled(CBLAS_LAYOUT layout,
       }
     }
 
-
+		//sleep(me+1);
     if(is_line_trsm){
       for(j = k_local_n + (proc == me); j < n_local; j++){
+				//printf("p%d: line (%d, %d), size: %d\n", me, k_local_m, j, (has_last_col && j == n_local - 1)? (n % TILE_SIZE) : TILE_SIZE);
 	       my_dtrsm(/*int *Layout*/ CblasColMajor,
                   /*int side*/      CblasLeft,
                   /*int uplo*/      CblasLower,
                   /*int transA*/    CblasNoTrans,
                   /*int diag*/      CblasUnit,
                   /*int m*/         TILE_SIZE,
-		              /*int n*/         (has_last_col && j == n_local - 1)? (n % TILE_SIZE) : TILE_SIZE,
+		              /*int n*/         (has_last_col && j == n_local - 1 && ((n % TILE_SIZE) != 0))? (n % TILE_SIZE) : TILE_SIZE,
                   /*double alpha*/  1,
                   /*double *a*/     bloc_dgetf2,
                   /*int lda*/       TILE_SIZE,
@@ -239,8 +241,8 @@ void my_pdgetrf_tiled(CBLAS_LAYOUT layout,
         my_dgemm_bloc (CblasColMajor,
                      CblasNoTrans,
                      CblasNoTrans,
-                     /* m */ (has_last_line && i == m_local - 1)? (m % TILE_SIZE) : TILE_SIZE,
-                     /* n */ (has_last_col && j == n_local - 1)? (n % TILE_SIZE) : TILE_SIZE,
+                     /* m */ (has_last_line && i == m_local - 1 && ((m % TILE_SIZE) != 0))? (m % TILE_SIZE) : TILE_SIZE,
+                     /* n */ (has_last_col && j == n_local - 1 && ((n % TILE_SIZE) != 0))? (n % TILE_SIZE) : TILE_SIZE,
                      /* k */ TILE_SIZE,
                      /* alpha */ -1.,
                      /* A[i][k] */ col_trsm[i],

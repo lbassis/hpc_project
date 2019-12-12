@@ -4,7 +4,7 @@ TESTS_SRC = $(notdir $(wildcard src/tst/*.c))
 BIN_TESTS = $(addprefix bin/tst/,$(TESTS_SRC:.c=.exe))
 
 PERF_SRC = $(notdir $(wildcard src/perf/*.c))
-BIN_PERF = $(addprefix bin/perf/,$(PERF_SRC:.c=.exe)) bin/perf/dgetrf_profiling.exe
+BIN_PERF = $(addprefix bin/perf/,$(PERF_SRC:.c=.exe)) bin/perf/dgetrf_profiling.exe bin/perf/dgetrf_profiling1.exe
 
 BIN = $(BIN_TESTS) $(BIN_PERF)
 
@@ -62,6 +62,9 @@ obj/tst/%.o: src/tst/%.c
 obj/perf/dgetrf_profiling.o: src/dgetrf_profiling.c
 	$(CC) -o $@ $(CFLAGS) -c $<
 
+obj/perf/dgetrf_profiling1.o: src/dgetrf_profiling1.c
+	$(CC) -o $@ $(CFLAGS) -c $<
+
 obj/perf/%.o: src/perf/%.c
 	@$(CC) -o $@ $(CFLAGS) -c $<
 
@@ -70,6 +73,9 @@ bin/tst/%.exe: obj/tst/%.o $(UTILS_OBJ) $(LIB_DIR)/libmyblas.so
 
 
 bin/perf/dgetrf_profiling.exe: obj/perf/dgetrf_profiling.o obj/utilities/util.o obj/utilities/mpi.o $(LIB_DIR)/libmyblasperf.so
+	$(CC) -o $@ $(CFLAGS) $^ $(LDLIBS)
+
+bin/perf/dgetrf_profiling1.exe: obj/perf/dgetrf_profiling1.o obj/utilities/util.o $(LIB_DIR)/libmyblasperf.so
 	$(CC) -o $@ $(CFLAGS) $^ $(LDLIBS)
 
 bin/perf/%.exe: obj/perf/%.o $(UTILS_OBJ) $(LIB_DIR)/libmyblas.so
