@@ -34,14 +34,14 @@ link_directories( ${ALGONUM_DIR}/lib )
 
 # Define the list of source files for the myblas library
 set( myblas_srcs
+  # linking to our library
   ../../src/mylib/my_blas.c
   ../../src/mylib/my_dgemm.c
   ../../src/mylib/my_dgetrf.c
   ../../src/mylib/my_lapack.c
   ../../src/utilities/util.c
-  #../../src/mylib/my_pdgetrf.c
-  #mygemm.c
-  #mygetrf.c
+  #mygemm.c # legacy code
+  #mygetrf.c # legacy code
 )
 
 if( ENABLE_STARPU )
